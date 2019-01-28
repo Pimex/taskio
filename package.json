@@ -1,0 +1,29 @@
+{
+  "name": "taskio",
+  "version": "0.0.1",
+  "description": "Scheduled tasks system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pimex/taskio.git"
+  },
+  "keywords": [
+    "task"
+  ],
+  "author": "jquiceno",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pimex/taskio/issues"
+  },
+  "homepage": "https://github.com/Pimex/taskio#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "ava": "^1.0.1",
+    "delay": "^4.1.0",
+    "uuid-base62": "^0.1.0"
+  }
+}
