@@ -1,7 +1,0 @@
-{
-  "modules": {
-    "db": {
-      "url": "mongodb://wserna:ghF4YejwNR5w9XU@ds133632.mlab.com:33632/db_taskio"
-    }
-  }
-}

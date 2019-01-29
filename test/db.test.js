@@ -16,7 +16,7 @@ import { Db } from '../src'
 test('Delete document of collection', async t => {
   const db = await Db.init({ dbName: 'db_taskio', collection: 'task' })
   let document = await db.add({ id: 123, name: 'willy'})
-  let res = await db.delete(123)
+  let res = await db.delete(document.id)
   console.log(res)
-  t.deepEqual(res.id, 123)
+  t.deepEqual(res.id, document.id)
 })
