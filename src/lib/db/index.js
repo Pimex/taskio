@@ -53,6 +53,42 @@ class Db {
       return Promise.reject(new Boom(error))
     }
   }
+
+  async update () {
+    try {
+    } catch (error) {
+      return Promise.reject(new Boom(error))
+    }
+  }
+
+  async get (id) {
+    try {
+      if (!id) throw Boom.notFound('id not found or invalid')
+
+      const res = await this.db.collection(this.collection).find({ id: id }).toArray()
+
+      if (res.length <= 0) throw Boom.notFound('id not found')
+
+      return Promise.resolve(res[0])
+    } catch (error) {
+      return Promise.reject(new Boom(error))
+    }
+  }
+
+  async delete (id) {
+    try {
+      const item = await this.get(id)
+
+      await this.db.collection(this.collection).deleteOne({
+        id: id
+      })
+
+      return Promise.resolve(item)
+    } catch (error) {
+      console.log(error)
+      return Promise.reject(new Boom(error))
+    }
+  }
 }
 
 module.exports = Db
