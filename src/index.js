@@ -5,5 +5,6 @@ import Db from './lib/db'
 
 module.exports = {
   Task,
-  Db
+  Db,
+  Account
 }
