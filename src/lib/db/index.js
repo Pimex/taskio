@@ -35,13 +35,12 @@ class Db {
       return Promise.reject(new Boom(error))
     }
   }
-  
+
   async getAll (query = {}) {
     try {
       const res = await this.db.collection(this.collection).find(query).toArray()
       return Promise.resolve(res)
     } catch (error) {
-      console.log(error)
       return Promise.reject(new Boom(error))
     }
   }
@@ -49,15 +48,20 @@ class Db {
   async add (data) {
     try {
       data.id = Db.keyGen()
-      const res = await this.db.collection(this.collection).insertOne(data)
+      await this.db.collection(this.collection).insertOne(data)
       return Promise.resolve(data)
     } catch (error) {
       return Promise.reject(new Boom(error))
     }
   }
 
-  async update () {
+  async update (id, data) {
     try {
+      const item = await this.get(id)
+
+      await this.db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
+
+      return Promise.resolve(data)
     } catch (error) {
       return Promise.reject(new Boom(error))
     }
@@ -87,7 +91,6 @@ class Db {
 
       return Promise.resolve(item)
     } catch (error) {
-      console.log(error)
       return Promise.reject(new Boom(error))
     }
   }

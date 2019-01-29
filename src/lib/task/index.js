@@ -10,7 +10,7 @@ class Task {
   get () {
     try {
       if (!this.id) throw Boom.notFound('Task id not found or invalid')
- 
+
       return Promise.resolve({
         res: 200
       })
