@@ -1,0 +1,7 @@
+{
+  "modules": {
+    "db": {
+      "url": "mongodb://<dbuser>:<dbpassword>@<dbserveruri>:<dbport>/<dbname>"
+    }
+  }
+}
