@@ -2,10 +2,10 @@
   "name": "taskio",
   "version": "0.0.1",
   "description": "Scheduled tasks system",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "NODE_ENV=test ava -v -s ./test/**.js",
-    "build": "babel src --out-dir dist",
+    "build": "babel src --out-dir dist"
   },
   "repository": {
     "type": "git",
@@ -20,11 +20,21 @@
     "url": "https://github.com/Pimex/taskio/issues"
   },
   "homepage": "https://github.com/Pimex/taskio#readme",
+  "ava": {
+    "require": [
+      "@babel/register"
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
+    "@babel/register": "^7.0.0",
     "ava": "^1.0.1",
     "delay": "^4.1.0",
     "uuid-base62": "^0.1.0"
+  },
+  "dependencies": {
+    "boom": "^7.3.0",
+    "mongodb": "^3.1.13"
   }
 }
