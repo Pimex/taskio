@@ -3,6 +3,7 @@
 import getfig from 'getfig'
 import Boom from 'boom'
 import { MongoClient } from 'mongodb'
+import Utils from '../utils'
 
 const config = getfig.get('modules.db')
 let instance = false
@@ -52,6 +53,41 @@ class Db {
     } catch (error) {
       return Promise.reject(new Boom(error))
     }
+  }
+
+  static keyGen (as = 'random') {
+    const alphabet = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
+    let lastTimestamp = 0
+    let timestamp = Date.now()
+    let result = new Array(9)
+
+    if (timestamp <= lastTimestamp) {
+      timestamp = lastTimestamp + 1
+    }
+
+    lastTimestamp = timestamp
+
+    for (let i = 7; i >= 0; --i) {
+      result[i] = alphabet.charAt(timestamp % 64)
+      timestamp = Math.floor(timestamp / 64)
+    }
+
+    if (timestamp !== 0) {
+      throw new Error('Unexpected timestamp.')
+    }
+
+    switch (as) {
+      case 'max':
+        result[8] = 'zzzzzzzzzzzz'
+        break
+      case 'min':
+        result[8] = '------------'
+        break
+      default:
+        result[8] = Utils.randomString(12, alphabet)
+    }
+
+    return result.join('')
   }
 }
 
