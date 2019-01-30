@@ -5,8 +5,9 @@
   "main": "./dist/index.js",
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && NODE_ENV=test ava -v -s ./test/**.js",
-    "build": "babel src --out-dir dist"
+    "test": "NODE_ENV=test npm run lint && ava -v -s",
+    "build": "npm run lint && babel src --out-dir dist",
+    "dev:test": "NODE_ENV=test npm run build && npm run test -- -w"
   },
   "repository": {
     "type": "git",
