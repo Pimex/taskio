@@ -47,6 +47,7 @@ class Db {
 
   async add (data) {
     try {
+      if (!data || typeof data !== 'object') throw Boom.notFound('data not found or invalid')
       data.id = Db.keyGen()
       await this.db.collection(this.collection).insertOne(data)
       return Promise.resolve(data)
@@ -58,6 +59,8 @@ class Db {
   async update (id, data) {
     try {
       const item = await this.get(id)
+
+      if (!data || typeof data !== 'object') throw Boom.notFound('data not found or invalid')
 
       await this.db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
 
