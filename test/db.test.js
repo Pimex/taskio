@@ -6,7 +6,8 @@ import { Db } from '../src'
 test('Init database', async t => {
   let obj = { dbName: 'db_taskio', collection: 'task' }
   const db = await Db.init(obj)
-  t.deepEqual(obj.dbName, db.db.s.databaseName)
+  const instanse = await db.getInstance()
+  t.deepEqual(obj.dbName, instanse.s.databaseName)
 })
 
 test('Add document', async t => {

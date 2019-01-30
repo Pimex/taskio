@@ -9,28 +9,63 @@ const config = getfig.get('modules.db')
 let instance = false
 
 class Db {
-  constructor ({ collection, dbName, client = false }) {
-    if (!dbName) throw Boom.notFound('DB name not found or invalid')
+  constructor ({ collection, dbName = null, host = null }) {
+    const client = Db.connect({
+      host,
+      dbName
+    })
+
     this.collection = collection
     this.dbName = dbName
-    this.client = client || instance
-    this.db = this.client.db()
+    this.client = client
   }
 
-  static async init ({ collection, dbName }) {
+  static getUrl ({ host = null, dbName = null, url = null }) {
     try {
-      const client = await Db.connect()
-      return Promise.resolve(new Db({ collection, dbName, client }))
+      url = url || config.url
+
+      if (!url) {
+        dbName = dbName || config.dbName
+        host = host || config.host
+        url = `mongodb://${host}/${dbName}`
+      }
+
+      return url
+    } catch (e) {
+      return new Boom(e)
+    }
+  }
+
+  async getInstance (data = {}) {
+    try {
+      let client = null
+
+      if (!instance) {
+        client = await this.client
+        const db = await client.db()
+        instance = db
+      }
+
+      return Promise.resolve(instance)
+    } catch (e) {
+      return Promise.reject(new Boom(e))
+    }
+  }
+
+  static init (data = {}) {
+    try {
+      return new Db(data)
     } catch (error) {
       return Promise.reject(new Boom(error))
     }
   }
 
-  static async connect (url = config.url) {
+  static async connect (data = {}) {
     try {
+      const url = Db.getUrl(data)
       const i = await MongoClient.connect(url, { useNewUrlParser: true })
-      instance = i
-      return Promise.resolve(instance)
+
+      return Promise.resolve(i)
     } catch (error) {
       return Promise.reject(new Boom(error))
     }
@@ -47,8 +82,9 @@ class Db {
 
   async add (data) {
     try {
+      const db = await this.getInstance()
       data.id = Db.keyGen()
-      await this.db.collection(this.collection).insertOne(data)
+      await db.collection(this.collection).insertOne(data)
       return Promise.resolve(data)
     } catch (error) {
       return Promise.reject(new Boom(error))
@@ -57,9 +93,10 @@ class Db {
 
   async update (id, data) {
     try {
+      const db = await this.getInstance()
       const item = await this.get(id)
 
-      await this.db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
+      await db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
 
       return Promise.resolve(data)
     } catch (error) {
@@ -71,7 +108,9 @@ class Db {
     try {
       if (!id) throw Boom.notFound('id not found or invalid')
 
-      const res = await this.db.collection(this.collection).find({ id: id }).toArray()
+      const db = await this.getInstance()
+
+      const res = await db.collection(this.collection).find({ id: id }).toArray()
 
       if (res.length <= 0) throw Boom.notFound('id not found')
 
@@ -83,9 +122,10 @@ class Db {
 
   async delete (id) {
     try {
+      const db = await this.getInstance()
       const item = await this.get(id)
 
-      await this.db.collection(this.collection).deleteOne({
+      await db.collection(this.collection).deleteOne({
         id: id
       })
 
