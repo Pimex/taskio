@@ -20,9 +20,9 @@ class Task {
     }
   }
 
-  static async getAll () {
+  static async getAll (query = {}) {
     try {
-      let res = await db.getAll()
+      let res = await db.getAll(query)
 
       return Promise.resolve(res)
     } catch (error) {

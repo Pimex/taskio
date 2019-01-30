@@ -35,20 +35,14 @@ test('Delete task', async t => {
   t.deepEqual(taskData.id, newTask.id)
 })
 
-// test('Get all tasks', async t => {
-//   const task = new Task(newTask.id)
-//   const taskData = await task.get()
-//   t.deepEqual(newTask.id, taskData.data.id)
-//   t.is(taskData.status_code, 200)
-// })
+test('Get all tasks', async t => {
+  const taskData = await Task.getAll()
+  t.is((typeof taskData === 'object'), true)
+})
 
-// test('Error task not found', async t => {
-//   const task = new Task()
-
-//   const taskData = await t.throwsAsync(() => {
-//     return task.get()
-//   })
-
-//   t.regex(taskData.output.payload.message, /not found/)
-//   t.deepEqual(taskData.output.statusCode, 404)
-// })
+test('Get all task by query', async t => {
+  let res = await Task.getAll({
+    name: newTask['name']
+  })
+  t.is((res.filter(d => { return d.name === newTask.name }).length > 0), true)
+})
