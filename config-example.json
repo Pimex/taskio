@@ -1,7 +1,9 @@
 {
   "modules": {
     "db": {
-      "url": "mongodb://<dbuser>:<dbpassword>@<dbserveruri>:<dbport>/<dbname>"
+      "url": "mongodb://<dbuser>:<dbpassword>@<dbserveruri>:<dbport>/<dbname>",
+      "host": "<dbuser>:<dbpassword>@<dbserveruri>",
+      "dbName": "<dbname>"
     }
   }
 }
