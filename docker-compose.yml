@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  db:
+    image: mongo
+
+  taskio:
+    build: .
+    image: taskio
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
