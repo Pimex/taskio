@@ -3,20 +3,22 @@
 import test from 'ava'
 import { Db } from '../src'
 
-test.before(t => {
+test.before(async t => {
   t.context.dbName = 'db_taskio'
   t.context.collection = 'task'
+  const obj = { dbName: t.context.dbName, collection: t.context.collection }
+
+  t.context.db = Db.init(obj)
 })
 
 test('Init database', async t => {
-  let obj = { dbName: t.context.dbName, collection: t.context.collection }
-  const db = await Db.init(obj)
-  const instanse = await db.getInstance()
-  t.deepEqual(obj.dbName, instanse.s.databaseName)
+  const dbName = t.context.dbName
+  const instanse = await t.context.db.getInstance()
+  t.deepEqual(dbName, instanse.s.databaseName)
 })
 
 test('Add document', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let obj = { name: 'willy', email: 'wserna@gmail.com' }
   let document = await db.add(obj)
   await db.delete(document.id)
@@ -25,7 +27,7 @@ test('Add document', async t => {
 })
 
 test('Error Add document data not found or invalid', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let obj = 'willy'
   let err = await t.throwsAsync(() => {
     return db.add(obj)
@@ -35,7 +37,7 @@ test('Error Add document data not found or invalid', async t => {
 })
 
 test('Update document', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let obj = { name: 'willy', email: 'wserna@gmail.com' }
   let document = await db.add(obj)
   obj.lastname = 'serna'
@@ -46,7 +48,7 @@ test('Update document', async t => {
 })
 
 test('Error Update document data not found or invalid', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let obj = { name: 'willy', email: 'wserna@gmail.com' }
   let document = await db.add(obj)
   obj = null
@@ -59,7 +61,7 @@ test('Error Update document data not found or invalid', async t => {
 })
 
 test('Get document by id', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let document = await db.add({ name: 'willy', email: 'wserna@gmail.com' })
   let res = await db.get(document.id)
   await db.delete(document.id)
@@ -67,7 +69,7 @@ test('Get document by id', async t => {
 })
 
 test('Error Get document id not found', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let err = await t.throwsAsync(() => {
     return db.get(222)
   })
@@ -76,7 +78,7 @@ test('Error Get document id not found', async t => {
 })
 
 test('Delete document of collection', async t => {
-  const db = await Db.init({ dbName: t.context.dbName, collection: t.context.collection })
+  const db = t.context.db
   let document = await db.add({ name: 'willy', email: 'wserna@gmail.com' })
   let res = await db.delete(document.id)
   t.deepEqual(res.id, document.id)
