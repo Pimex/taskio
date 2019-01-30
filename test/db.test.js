@@ -2,6 +2,7 @@
 
 import test from 'ava'
 import { Db } from '../src'
+import uuid from 'uuid-base62'
 
 test.before(async t => {
   t.context.dbName = 'db_taskio'
@@ -9,6 +10,36 @@ test.before(async t => {
   const obj = { dbName: t.context.dbName, collection: t.context.collection }
 
   t.context.db = Db.init(obj)
+})
+
+test.afterEach(async t => {
+  const db = t.context.db
+  if (t.context.document) {
+    await db.delete(t.context.document.id)
+  }
+})
+
+test('Get all documents by query', async t => {
+  const email = `${uuid.v4()}@taskio.com`
+  const db = t.context.db
+  let document = await db.add({ name: 'willy', email })
+  let res = await db.getAll({
+    email
+  })
+
+  t.context.document = document
+
+  t.is((res.filter(d => { return d.id === document.id }).length > 0), true)
+})
+
+test('Get all documents', async t => {
+  const db = t.context.db
+  let document = await db.add({ name: 'willy', email: 'wserna@gmail.com' })
+  let res = await db.getAll()
+
+  t.context.document = document
+
+  t.is((res.filter(d => { return d.id === document.id }).length > 0), true)
 })
 
 test('Init database', async t => {

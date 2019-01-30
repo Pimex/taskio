@@ -73,7 +73,8 @@ class Db {
 
   async getAll (query = {}) {
     try {
-      const res = await this.db.collection(this.collection).find(query).toArray()
+      const db = await this.getInstance()
+      const res = await db.collection(this.collection).find(query).toArray()
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(new Boom(error))
