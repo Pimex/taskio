@@ -5,8 +5,10 @@
   "main": "./dist/index.js",
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && NODE_ENV=test ava -v -s ./test/**.js",
-    "build": "babel src --out-dir dist"
+    "test": "NODE_ENV=test npm run lint && ava -v -s",
+    "build": "npm run lint && babel src --out-dir dist",
+    "dev:test": "NODE_ENV=test npm run build && npm run test -- -w",
+    "start": "npm run build && node ./dist/server"
   },
   "repository": {
     "type": "git",
@@ -38,6 +40,9 @@
   "dependencies": {
     "boom": "^7.3.0",
     "getfig": "0.0.3",
-    "mongodb": "^3.1.13"
+    "hapi": "^18.0.0",
+    "mongodb": "^3.1.13",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
   }
 }
