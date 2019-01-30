@@ -2,9 +2,15 @@
 
 import test from 'ava'
 import { Task } from '../src'
+import Moment from 'moment'
 
 test.beforeEach(async t => {
-  t.context.objTest = { name: 'Willy', email: 'wsernalaverde@gmail.com' }
+  t.context.objTest = {
+    name: 'Willy',
+    owner: 'wsernalaverde@gmail.com',
+    state: 'paused',
+    exect_date: Moment().unix()
+  }
 })
 
 test.afterEach(async t => {
@@ -17,7 +23,9 @@ test.afterEach(async t => {
 test('Add task', async t => {
   const taskData = await Task.add(t.context.objTest)
   t.context.task = taskData
-  t.deepEqual(t.context.objTest.email, taskData.email)
+
+  t.deepEqual(t.context.objTest.owner, taskData.owner)
+  t.deepEqual(taskData.state, 'active')
   t.truthy(taskData._id, true)
 })
 

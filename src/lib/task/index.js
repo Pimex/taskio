@@ -2,6 +2,9 @@
 
 import Boom from 'boom'
 import Db from '../db'
+import schemaTemplate from './schema'
+import { Schema } from 'schemio'
+import Moment from 'moment'
 
 const db = Db.init({ dbName: 'db_taskio', collection: 'task' })
 
@@ -12,6 +15,9 @@ class Task {
 
   static async add (data) {
     try {
+      data._created = Moment().unix()
+      data = Schema.validate(data, schemaTemplate.add)
+
       let res = await db.add(data)
 
       return Promise.resolve(res)
