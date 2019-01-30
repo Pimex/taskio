@@ -38,6 +38,8 @@ class Task {
 
   async update (data) {
     try {
+      data = Schema.validate(data, schemaTemplate.update)
+
       let res = await db.update(this.id, data)
 
       return Promise.resolve(res)

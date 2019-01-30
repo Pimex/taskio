@@ -4,11 +4,21 @@ import test from 'ava'
 import Server from '../src/services'
 import request from 'request-promise'
 import { Task } from '../src'
+import Moment from 'moment'
 
 test.before(async t => {
   const server = await Server.start('test')
   t.context.server = server
   t.context.baseurl = `${server.uri}/tasks`
+})
+
+test.beforeEach(async t => {
+  t.context.objTest = {
+    name: 'Willy',
+    owner: 'wsernalaverde@gmail.com',
+    state: 'paused',
+    exect_date: Moment().unix()
+  }
 })
 
 test.afterEach(async t => {
@@ -20,24 +30,24 @@ test.afterEach(async t => {
 
 test('Add task', async t => {
   const baseUrl = t.context.baseurl
-  let newTask = { name: 'willy', email: 'wsernalaverde@gmail.com' }
 
   const res = await request({
     uri: `${baseUrl}`,
     method: 'POST',
     json: true,
-    body: newTask
+    body: t.context.objTest
   })
 
   t.context.task = res.data
   t.deepEqual(res.statusCode, 201)
-  t.deepEqual(res.data.email, newTask.email)
+  t.deepEqual(t.context.objTest.owner, res.data.owner)
+  t.deepEqual(res.data.state, 'active')
   t.truthy(res.data._id, true)
 })
 
 test('Update task by id', async t => {
   const baseUrl = t.context.baseurl
-  let newTask = await Task.add({ name: 'willy', email: 'wsernalaverde@gmail.com' })
+  let newTask = await Task.add(t.context.objTest)
   newTask.lastname = 'Serna'
   delete newTask._id
 
@@ -50,12 +60,12 @@ test('Update task by id', async t => {
 
   t.context.task = newTask
   t.deepEqual(res.statusCode, 201)
-  t.deepEqual(res.data.lastname, newTask.lastname)
+  t.deepEqual(res.data.state, newTask.state)
 })
 
 test('Get task by id', async t => {
   const baseUrl = t.context.baseurl
-  let newTask = await Task.add({ name: 'willy', email: 'wsernalaverde@gmail.com' })
+  let newTask = await Task.add(t.context.objTest)
 
   const res = await request({
     uri: `${baseUrl}/${newTask.id}`,
@@ -98,7 +108,7 @@ test('Get all tasks by query', async t => {
 
 test('Delete task by id', async t => {
   const baseUrl = t.context.baseurl
-  let newTask = await Task.add({ name: 'willy', email: 'wsernalaverde@gmail.com' })
+  let newTask = await Task.add(t.context.objTest)
 
   const res = await request({
     uri: `${baseUrl}/${newTask.id}`,

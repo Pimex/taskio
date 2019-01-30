@@ -49,10 +49,10 @@ test('Error Get task id not found', async t => {
 test('Update task data', async t => {
   const newTask = await Task.add(t.context.objTest)
   const task = new Task(newTask.id)
-  newTask.lastname = 'Serna'
+  newTask.state = 'paused'
   const taskData = await task.update(newTask)
   t.context.task = newTask
-  t.deepEqual(taskData.lastname, newTask.lastname)
+  t.deepEqual(taskData.state, newTask.state)
 })
 
 test('Delete task', async t => {
