@@ -2,7 +2,7 @@
 
 import test from 'ava'
 import { Db } from '../src'
-import uuid from 'uuid-base62'
+import uuid from 'uuid/v4'
 
 test.before(async t => {
   t.context.dbName = 'db_taskio'
@@ -20,7 +20,7 @@ test.afterEach(async t => {
 })
 
 test('Get all documents by query', async t => {
-  const email = `${uuid.v4()}@taskio.com`
+  const email = `${uuid()}@taskio.com`
   const db = t.context.db
   let document = await db.add({ name: 'willy', email })
   let res = await db.getAll({
