@@ -20,7 +20,7 @@ module.exports = {
     server.route(routes)
 
     await server.start()
-    server.log('info', `Email server start in port: ${port || server.info.port}`)
+    server.log('info', `Taskio server start in port: ${port || server.info.port}`)
 
     return Promise.resolve(server.info)
   }
