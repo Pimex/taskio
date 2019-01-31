@@ -141,7 +141,7 @@ class Db {
     }
   }
 
-  static keyGen (as = 'random') {
+  static keyGen (as = 12) {
     const alphabet = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
     let lastTimestamp = 0
     let timestamp = Date.now()
@@ -158,20 +158,7 @@ class Db {
       timestamp = Math.floor(timestamp / 64)
     }
 
-    if (timestamp !== 0) {
-      throw new Error('Unexpected timestamp.')
-    }
-
-    switch (as) {
-      case 'max':
-        result[8] = 'zzzzzzzzzzzz'
-        break
-      case 'min':
-        result[8] = '------------'
-        break
-      default:
-        result[8] = Utils.randomString(12, alphabet)
-    }
+    result[8] = Utils.randomString(as, alphabet)
 
     return result.join('')
   }
