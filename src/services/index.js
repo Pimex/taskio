@@ -2,8 +2,10 @@
 
 import Hapi from 'hapi'
 import routes from './routes'
+import good from 'good'
 
 const portDefault = process.env.PORT || 3000
+const NODE_ENV = process.env.NODE_ENV || null
 
 module.exports = {
   async start (portCustom, host) {
@@ -18,6 +20,21 @@ module.exports = {
     })
 
     server.route(routes)
+
+    if (NODE_ENV !== 'test') {
+      await server.register({
+        plugin: good,
+        options: {
+          reporters: {
+            console: [{
+              module: 'good-console'
+            },
+            'stdout'
+            ]
+          }
+        }
+      })
+    }
 
     await server.start()
     server.log('info', `Taskio server start in port: ${port || server.info.port}`)
