@@ -29,6 +29,13 @@ test('Add task', async t => {
   t.truthy(taskData._id, true)
 })
 
+test('Error add task data invalid', async t => {
+  let err = await t.throwsAsync(() => {
+    return Task.add({ email: 'wserna@pimex.co' })
+  })
+  t.deepEqual(err.output.statusCode, 400)
+})
+
 test('Get task data by id', async t => {
   const newTask = await Task.add(t.context.objTest)
   const task = new Task(newTask.id)
@@ -53,6 +60,15 @@ test('Update task data', async t => {
   const taskData = await task.update(newTask)
   t.context.task = newTask
   t.deepEqual(taskData.state, newTask.state)
+})
+
+test('Error update task data invalid', async t => {
+  const newTask = await Task.add(t.context.objTest)
+  const task = new Task(newTask.id)
+  newTask.email = 'wserna@pimex.co'
+  const taskData = await task.update(newTask)
+  t.context.task = newTask
+  t.is(taskData.email, undefined)
 })
 
 test('Delete task', async t => {

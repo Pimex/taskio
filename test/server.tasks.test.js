@@ -45,6 +45,20 @@ test('Add task', async t => {
   t.truthy(res.data._id, true)
 })
 
+test('Error add task', async t => {
+  const baseUrl = t.context.baseurl
+
+  let err = await t.throwsAsync(() => {
+    return request({
+      uri: `${baseUrl}`,
+      method: 'POST',
+      json: true,
+      body: { email: 'wserna@pimex.co' }
+    })
+  })
+  t.deepEqual(err.statusCode, 400)
+})
+
 test('Update task by id', async t => {
   const baseUrl = t.context.baseurl
   let newTask = await Task.add(t.context.objTest)
@@ -63,6 +77,21 @@ test('Update task by id', async t => {
   t.deepEqual(res.data.state, newTask.state)
 })
 
+test('Error update task data invalid', async t => {
+  const baseUrl = t.context.baseurl
+  let newTask = await Task.add(t.context.objTest)
+  newTask.lastname = 'Serna'
+  delete newTask._id
+  const res = await request({
+    uri: `${baseUrl}/${newTask.id}`,
+    method: 'PUT',
+    json: true,
+    body: newTask
+  })
+  t.context.task = newTask
+  t.is(res.lastname, undefined)
+})
+
 test('Get task by id', async t => {
   const baseUrl = t.context.baseurl
   let newTask = await Task.add(t.context.objTest)
@@ -76,6 +105,20 @@ test('Get task by id', async t => {
   t.context.task = newTask
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(res.data.id, newTask.id)
+})
+
+test('Error Get task id not found', async t => {
+  const baseUrl = t.context.baseurl
+
+  let err = await t.throwsAsync(() => {
+    return request({
+      uri: `${baseUrl}/222`,
+      method: 'GET',
+      json: true
+    })
+  })
+  t.deepEqual(err.statusCode, 404)
+  t.regex(err.message, /not found/)
 })
 
 test('Get all tasks', async t => {
