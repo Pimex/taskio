@@ -57,6 +57,16 @@ class Request {
       return Promise.reject(new Boom(error))
     }
   }
+
+  static async deleteMany (query = {}) {
+    try {
+      let res = await db.deleteMany(query)
+
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(new Boom(error))
+    }
+  }
 }
 
 module.exports = Request

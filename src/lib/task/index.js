@@ -32,7 +32,17 @@ class Task {
 
   static async getAll (query = {}) {
     try {
-      let res = await db.getAll(query)
+      let queryDb = {}
+
+      for (let i in query) {
+        if (query[i].range) {
+          queryDb[i] = { $gt: query[i].range.init, $lt: query[i].range.end }
+          continue
+        }
+        queryDb[i] = query[i]
+      }
+
+      let res = await db.getAll(queryDb)
 
       return Promise.resolve(res)
     } catch (error) {
@@ -64,6 +74,9 @@ class Task {
 
   async delete () {
     try {
+      await Request.deleteMany({
+        task: this.id
+      })
       let res = await db.delete(this.id)
 
       return Promise.resolve(res)
@@ -107,6 +120,21 @@ class Task {
       } catch (error) {
         return Promise.reject(new Boom(error))
       }
+    }
+  }
+
+  static async monitor (query = {}) {
+    try {
+      const allTask = await this.getAll(query)
+      let taskExecuted = []
+      for (const item of allTask) {
+        taskExecuted.push(item)
+        const $task = new Task(item.id)
+        await $task.execute()
+      }
+      return taskExecuted
+    } catch (error) {
+      return new Boom(error)
     }
   }
 }

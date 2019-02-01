@@ -3,6 +3,7 @@
 import test from 'ava'
 import { Task } from '../src'
 import Moment from 'moment'
+import delay from 'delay'
 
 test.beforeEach(async t => {
   t.context.objTest = {
@@ -109,4 +110,28 @@ test('Exec task', async t => {
   t.context.task = taskData
   t.truthy(request.statusCode)
   t.deepEqual(taskData.id, request.task)
+})
+
+test('Monitor task', async t => {
+  await Task.add(t.context.objTest)
+  await delay(100)
+  const timeInit = Moment().unix()
+  for (let i = 0; i < 5; i++) {
+    await Task.add(t.context.objTest)
+    await delay(1000)
+    if (i === 3) t.context.objTest.name = 'John'
+  }
+  const timeEnd = Moment().unix()
+
+  const taskToExec = await Task.monitor({
+    _created: {
+      range: {
+        init: timeInit,
+        end: timeEnd
+      }
+    },
+    name: 'John'
+  })
+  t.is((taskToExec.filter(d => { return d._created < timeInit && d._created > timeEnd }).length <= 0), true)
+  t.is((taskToExec.filter(d => { return d.name !== 'John' }).length <= 0), true)
 })

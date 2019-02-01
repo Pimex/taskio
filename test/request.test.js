@@ -32,7 +32,7 @@ test('Add request', async t => {
 
   t.deepEqual(t.context.objTest.task, requestData.task)
   t.deepEqual(requestData.statusCode, 200)
-  t.truthy(requestData._id, true)
+  t.truthy(requestData._id)
 })
 
 test('Error add task data invalid', async t => {
@@ -78,4 +78,13 @@ test('Delete request', async t => {
   const request = new Request(newRequest.id)
   const requestData = await request.delete()
   t.deepEqual(requestData.id, newRequest.id)
+})
+
+test('Delete many request', async t => {
+  await Request.add(t.context.objTest)
+  await Request.add(t.context.objTest)
+  const requestData = await Request.deleteMany({
+    task: t.context.objTest.task
+  })
+  t.truthy(requestData.deletedCount)
 })

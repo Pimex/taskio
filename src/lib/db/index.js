@@ -141,6 +141,18 @@ class Db {
     }
   }
 
+  async deleteMany (query = {}) {
+    try {
+      const db = await this.getInstance()
+
+      const res = await db.collection(this.collection).deleteMany(query)
+
+      return Promise.resolve({ deletedCount: res.deletedCount })
+    } catch (error) {
+      return Promise.reject(new Boom(error))
+    }
+  }
+
   static keyGen (as = 12) {
     const alphabet = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
     let lastTimestamp = 0
