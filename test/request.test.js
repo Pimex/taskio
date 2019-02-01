@@ -26,6 +26,28 @@ test.afterEach(async t => {
   }
 })
 
+test('Send request error response', async t => {
+  const req = await Request.send({
+    url: 'https://pokeapi.co/api/v2/pokemon/taskio/'
+  })
+
+  t.deepEqual(typeof req.id, 'string')
+  t.deepEqual(typeof req.statusCode, 'number')
+  t.deepEqual(req.method, 'GET')
+  t.is(req.statusCode >= 400, true)
+})
+
+test('Send request', async t => {
+  const req = await Request.send({
+    url: 'https://pokeapi.co/api/v2/pokemon/ditto/'
+  })
+
+  t.deepEqual(typeof req.id, 'string')
+  t.deepEqual(typeof req.statusCode, 'number')
+  t.deepEqual(req.method, 'GET')
+  t.is(req.statusCode >= 200, true)
+})
+
 test('Add request', async t => {
   const requestData = await Request.add(t.context.objTest)
   t.context.request = requestData

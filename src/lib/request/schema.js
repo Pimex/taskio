@@ -2,13 +2,12 @@
 
 module.exports = {
   add: {
-    time: {
+    _created: {
       type: 'number',
       require: true
     },
     task: {
-      default: null,
-      require: true
+      default: null
     },
     statusCode: {
       type: 'number'
@@ -17,10 +16,40 @@ module.exports = {
       type: 'object'
     },
     response: {
-      type: 'object'
+      type: 'object',
+      require: true
     },
     method: {
-      type: 'string'
+      type: 'string',
+      require: true
+    },
+    webhook: {
+      default: null
+    },
+    headers: {
+      type: 'array'
+    }
+  },
+
+  send: {
+    uri: {
+      type: 'string',
+      require: true
+    },
+    method: {
+      default: 'GET'
+    },
+    headers: {
+      type: 'array'
+    },
+    body: {
+      type: 'object'
+    },
+    params: {
+      type: 'object'
+    },
+    json: {
+      value: true
     }
   }
 }
