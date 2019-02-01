@@ -9,7 +9,17 @@ test.beforeEach(async t => {
     name: 'Willy',
     owner: 'wsernalaverde@gmail.com',
     state: 'paused',
-    exect_date: Moment().unix()
+    exect_date: Moment().unix(),
+    req: {
+      webhook: {
+        uri: 'http://localhost:3003/test',
+        method: 'POST',
+        body: {
+          title: 'Tarea de prueba',
+          description: 'Realizar llamada al cliente'
+        }
+      }
+    }
   }
 })
 
@@ -90,4 +100,12 @@ test('Get all task by query', async t => {
   })
   t.context.task = newTask
   t.is((res.filter(d => { return d.name === newTask.name }).length > 0), true)
+})
+
+test('Exec task', async t => {
+  const taskData = await Task.add(t.context.objTest)
+  const task = new Task(taskData.id)
+  const request = await task.execute()
+  console.log(request)
+  t.is(true, true)
 })

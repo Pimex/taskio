@@ -5,9 +5,9 @@ import { Request } from '../src'
 
 test.beforeEach(async t => {
   t.context.objTest = {
-    status: 200,
+    statusCode: 200,
     method: 'POST',
-    id_task: '-LXZGomXhQqGOcnJmdt9',
+    task: '-LXZGomXhQqGOcnJmdt9',
     payload: {
       method: 'POST',
       data: 'data'
@@ -30,9 +30,16 @@ test('Add request', async t => {
   const requestData = await Request.add(t.context.objTest)
   t.context.request = requestData
 
-  t.deepEqual(t.context.objTest.id_task, requestData.id_task)
-  t.deepEqual(requestData.status, 200)
+  t.deepEqual(t.context.objTest.task, requestData.task)
+  t.deepEqual(requestData.statusCode, 200)
   t.truthy(requestData._id, true)
+})
+
+test('Error add task data invalid', async t => {
+  let err = await t.throwsAsync(() => {
+    return Request.add({ email: 'wserna@pimex.co' })
+  })
+  t.deepEqual(err.output.statusCode, 400)
 })
 
 test('Get all request', async t => {
@@ -43,10 +50,10 @@ test('Get all request', async t => {
 test('Get all request by query', async t => {
   const requestData = await Request.add(t.context.objTest)
   let res = await Request.getAll({
-    id_task: requestData.id_task
+    task: requestData.task
   })
   t.context.request = requestData
-  t.is((res.filter(d => { return d.id_task === requestData.id_task }).length > 0), true)
+  t.is((res.filter(d => { return d.task === requestData.task }).length > 0), true)
 })
 
 test('Get request data by id', async t => {
@@ -55,6 +62,15 @@ test('Get request data by id', async t => {
   const requestData = await request.get()
   t.context.request = newRequest
   t.deepEqual(newRequest.id, requestData.id)
+})
+
+test('Error Get request id not found', async t => {
+  const request = new Request(222)
+  let err = await t.throwsAsync(() => {
+    return request.get()
+  })
+  t.deepEqual(err.output.statusCode, 404)
+  t.regex(err.message, /not found/)
 })
 
 test('Delete request', async t => {

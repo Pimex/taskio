@@ -6,11 +6,11 @@ module.exports = {
       type: 'number',
       require: true
     },
-    id_task: {
+    task: {
       default: null,
       require: true
     },
-    status: {
+    statusCode: {
       type: 'number'
     },
     payload: {
