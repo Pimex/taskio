@@ -89,7 +89,11 @@ class Task {
           body: resExec.body
         }
       } catch (error) {
-        resExec = error
+        resExec = {
+          headers: error.response ? error.response.headers : '',
+          statusCode: error.statusCode || 500,
+          body: error.response ? error.response.body : error.message
+        }
       }
       try {
         let res = await Request.add({

@@ -36,7 +36,7 @@ test('Add task', async t => {
 
   t.deepEqual(t.context.objTest.owner, taskData.owner)
   t.deepEqual(taskData.state, 'active')
-  t.truthy(taskData._id, true)
+  t.truthy(taskData._id)
 })
 
 test('Error add task data invalid', async t => {
@@ -106,6 +106,7 @@ test('Exec task', async t => {
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
-  console.log(request)
-  t.is(true, true)
+  t.context.task = taskData
+  t.truthy(request.statusCode)
+  t.deepEqual(taskData.id, request.task)
 })
