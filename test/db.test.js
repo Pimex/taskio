@@ -19,6 +19,17 @@ test.afterEach(async t => {
   }
 })
 
+test('Key gen method', async t => {
+  const long = 25
+  const customKey = Db.keyGen(long)
+  const key = Db.keyGen()
+
+  t.true(typeof key === 'string')
+  t.true(typeof customKey === 'string')
+  t.true(key.length > 12)
+  t.true(customKey.length > long)
+})
+
 test('Get all documents by query', async t => {
   const email = `${uuid()}@taskio.com`
   const db = t.context.db

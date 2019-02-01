@@ -1,6 +1,6 @@
 'use strict'
 
-import { Task } from '../../'
+import Task from '../../lib/task'
 
 const routes = [
   /**
