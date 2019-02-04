@@ -27,7 +27,10 @@ module.exports = {
       default: null
     },
     headers: {
-      type: 'array'
+      type: 'object'
+    },
+    query: {
+      type: 'object'
     }
   },
 
@@ -40,7 +43,7 @@ module.exports = {
       default: 'GET'
     },
     headers: {
-      type: 'array'
+      type: 'object'
     },
     body: {
       type: 'object'
@@ -50,6 +53,9 @@ module.exports = {
     },
     json: {
       value: true
+    },
+    qs: {
+      type: 'object'
     }
   }
 }
