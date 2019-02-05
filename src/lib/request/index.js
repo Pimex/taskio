@@ -17,14 +17,15 @@ class Request {
   static async send (data) {
     let res = {}
 
-    data.method = data.method || 'GET'
+    data.method = data.method || 'POST'
     data.uri = data.uri || data.url
+    data.qs = data.qs || data.query
 
     try {
-      data = Schema.validate(data, schemaTemplate.send)
+      const rqData = Schema.validate(data, schemaTemplate.send)
 
       res = await new Promise((resolve, reject) => {
-        request(data, (err, res) => {
+        request(rqData, (err, res) => {
           if (err) {
             resolve(err)
           }
@@ -43,8 +44,9 @@ class Request {
         method: data.method,
         payload: data.body,
         response: res,
-        task: data.task || null,
-        webhook: data.task || null
+        task: data.task,
+        webhook: data.webhook,
+        query: data.query
       })
 
       return Promise.resolve(req)
