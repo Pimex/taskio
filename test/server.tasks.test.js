@@ -5,6 +5,7 @@ import Server from '../src/services'
 import request from 'request-promise'
 import { Task } from '../src'
 import Moment from 'moment'
+import delay from 'delay'
 
 test.before(async t => {
   const server = await Server.start('test')
@@ -17,7 +18,17 @@ test.beforeEach(async t => {
     name: 'Willy',
     owner: 'wsernalaverde@gmail.com',
     state: 'paused',
-    exect_date: Moment().unix()
+    exect_date: Moment().unix(),
+    req: {
+      webhook: {
+        uri: 'http://localhost:3003/test',
+        method: 'POST',
+        body: {
+          title: 'Tarea de prueba',
+          description: 'Realizar llamada al cliente'
+        }
+      }
+    }
   }
 })
 
@@ -161,4 +172,30 @@ test('Delete task by id', async t => {
 
   t.deepEqual(res.statusCode, 200)
   t.deepEqual(res.data.id, newTask.id)
+})
+
+test('Exec monitor', async t => {
+  const baseUrl = t.context.baseurl
+  const timeInit = Moment().unix()
+  await delay(1000)
+  const newTask = await Task.add(t.context.objTest)
+  await delay(1000)
+  const timeEnd = Moment().unix()
+  const res = await request({
+    uri: `${baseUrl}/monitor`,
+    method: 'POST',
+    json: true,
+    body: {
+      _created: {
+        range: {
+          init: timeInit,
+          end: timeEnd
+        }
+      },
+      state: 'active'
+    }
+  })
+  t.context.task = newTask
+  t.is((res.data.filter(d => { return d._created < timeInit && d._created > timeEnd }).length <= 0), true)
+  t.deepEqual(res.statusCode, 200)
 })

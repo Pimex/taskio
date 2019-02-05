@@ -66,6 +66,9 @@ module.exports = {
     },
     req: {
       type: 'object'
+    },
+    resend_failed: {
+      type: 'number'
     }
   }
 }

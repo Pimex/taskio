@@ -66,9 +66,9 @@ class Request {
     }
   }
 
-  static async getAll (query = {}) {
+  static async getAll (query = {}, options = {}) {
     try {
-      let res = await db.getAll(query)
+      let res = await db.getAll(query, options)
 
       return Promise.resolve(res)
     } catch (error) {

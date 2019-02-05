@@ -71,10 +71,10 @@ class Db {
     }
   }
 
-  async getAll (query = {}) {
+  async getAll (query = {}, options = {}) {
     try {
       const db = await this.getInstance()
-      const res = await db.collection(this.collection).find(query).toArray()
+      const res = await db.collection(this.collection).find(query, options).toArray()
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(new Boom(error))

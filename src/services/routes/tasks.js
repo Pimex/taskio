@@ -1,6 +1,7 @@
 'use strict'
 
 import Task from '../../lib/task'
+import Moment from 'moment'
 
 const routes = [
   /**
@@ -116,6 +117,40 @@ const routes = [
       try {
         const task = new Task(params.id)
         const data = await task.delete()
+
+        res = {
+          data,
+          statusCode: 200
+        }
+      } catch (e) {
+        res = e.output.payload
+      }
+
+      return h.response(res).code(res.statusCode)
+    }
+  },
+  /**
+   * POST exec monitor
+  **/
+  {
+    method: 'POST',
+    path: '/tasks/monitor',
+    handler: async (request, h) => {
+      let body = request.payload
+      let res
+
+      try {
+        let query = body || {
+          exect_date: {
+            range: {
+              init: Moment().unix(),
+              end: Moment().add(1, 'minute').unix()
+            }
+          },
+          state: 'active'
+        }
+
+        const data = await Task.monitor(query)
 
         res = {
           data,

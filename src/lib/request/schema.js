@@ -12,6 +12,9 @@ module.exports = {
     statusCode: {
       type: 'number'
     },
+    state: {
+      type: 'string'
+    },
     payload: {
       type: 'object'
     },
