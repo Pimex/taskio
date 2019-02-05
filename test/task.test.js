@@ -103,14 +103,57 @@ test('Get all task by query', async t => {
   t.is((res.filter(d => { return d.name === newTask.name }).length > 0), true)
 })
 
-test('Exec task', async t => {
+test('Exec task without repeat', async t => {
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
   t.context.task = taskData
+  const taskExecuted = await task.get()
+  t.deepEqual(taskExecuted.state, 'ended')
   t.truthy(request.statusCode)
   t.deepEqual(taskData.id, request.task)
 })
+
+test('Exec task with repeat', async t => {
+  t.context.objTest.repeat = {
+    times: 2,
+    intDays: 15
+  }
+  const taskData = await Task.add(t.context.objTest)
+  const task = new Task(taskData.id)
+  const request = await task.execute()
+  t.context.task = taskData
+  const taskExecuted = await task.get()
+
+  t.deepEqual(taskExecuted.state, 'active')
+  t.deepEqual(taskData.id, request.task)
+  t.notDeepEqual(taskData.exect_date, taskExecuted.exect_date)
+  t.truthy(request.statusCode)
+})
+
+// test('Exec task multiple times', async t => {
+// t.context.objTest.repeat = {
+//   times: 2,
+//   intDays: 15
+// }
+//   const taskData = await Task.add(t.context.objTest)
+//   const task = new Task(taskData.id)
+//   let request = []
+//   for (let i = 0; i < 4; i++) {
+//     // if (i === 1) {
+//     //   taskData.req.webhook.uri = 'http://localhost:3003/test'
+//     //   await task.update(taskData)
+//     // } else if (i === 2) {
+//     //   taskData.req.webhook.uri = 'http://localhost:3003/teste'
+//     //   await task.update(taskData)
+//     // }
+//     request.push(await task.execute())
+//   }
+//   // console.log(request)
+//   t.is(true, true)
+//   // t.truthy(request.statusCode)
+//   // t.deepEqual(taskData.id, request.task)
+// })
 
 test('Monitor task', async t => {
   await Task.add(t.context.objTest)
