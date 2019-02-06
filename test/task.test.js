@@ -4,6 +4,32 @@ import test from 'ava'
 import { Task } from '../src'
 import Moment from 'moment'
 import delay from 'delay'
+import Hapi from 'hapi'
+
+async function startServer () {
+  const server = Hapi.server({
+    host: '0.0.0.0'
+  })
+
+  server.route({
+    method: '*',
+    path: '/{params*}',
+    handler: (request, h) => {
+      const res = {
+        payload: request.payload,
+        params: request.params,
+        query: request.query,
+        headers: request.headers
+      }
+
+      return h.response(res).code(200)
+    }
+  })
+
+  await server.start()
+
+  return server.info
+}
 
 test.beforeEach(async t => {
   t.context.objTest = {
@@ -104,6 +130,8 @@ test('Get all task by query', async t => {
 })
 
 test('Exec task without repeat', async t => {
+  const server = await startServer()
+  t.context.objTest.req.webhook.uri = server.uri
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
@@ -115,6 +143,8 @@ test('Exec task without repeat', async t => {
 })
 
 test('Exec task with repeat', async t => {
+  const server = await startServer()
+  t.context.objTest.req.webhook.uri = server.uri
   t.context.objTest.repeat = {
     times: 2,
     intDays: 15
@@ -131,29 +161,54 @@ test('Exec task with repeat', async t => {
   t.truthy(request.statusCode)
 })
 
-// test('Exec task multiple times', async t => {
-// t.context.objTest.repeat = {
-//   times: 2,
-//   intDays: 15
-// }
-//   const taskData = await Task.add(t.context.objTest)
-//   const task = new Task(taskData.id)
-//   let request = []
-//   for (let i = 0; i < 4; i++) {
-//     // if (i === 1) {
-//     //   taskData.req.webhook.uri = 'http://localhost:3003/test'
-//     //   await task.update(taskData)
-//     // } else if (i === 2) {
-//     //   taskData.req.webhook.uri = 'http://localhost:3003/teste'
-//     //   await task.update(taskData)
-//     // }
-//     request.push(await task.execute())
-//   }
-//   // console.log(request)
-//   t.is(true, true)
-//   // t.truthy(request.statusCode)
-//   // t.deepEqual(taskData.id, request.task)
-// })
+test('Error exec task', async t => {
+  const taskData = await Task.add(t.context.objTest)
+  const task = new Task(taskData.id)
+  const request = await task.execute()
+  const taskExecuted = await task.get()
+  t.context.task = taskData
+  t.deepEqual(request.state, 'error')
+  t.deepEqual(taskExecuted.state, 'failed')
+  t.truthy(taskExecuted.resend_failed)
+})
+
+test('Error exec task three times and caneled', async t => {
+  t.context.objTest.repeat = { times: 2, intDays: 15 }
+  const taskData = await Task.add(t.context.objTest)
+  const task = new Task(taskData.id)
+  for (let i = 0; i < 3; i++) {
+    await task.execute()
+  }
+  const taskExecuted = await task.get()
+  t.context.task = taskData
+  t.deepEqual(taskExecuted.state, 'canceled')
+  t.truthy(taskExecuted.resend_failed)
+})
+
+test('Exec task with error and then succes', async t => {
+  const server = await startServer()
+  t.context.objTest.repeat = {
+    times: 2,
+    intDays: 15
+  }
+  const taskData = await Task.add(t.context.objTest)
+  const task = new Task(taskData.id)
+  let request = []
+  for (let i = 0; i < 2; i++) {
+    if (i === 1) {
+      taskData.req.webhook.uri = server.uri
+      await task.update(taskData)
+    }
+    request.push(await task.execute())
+  }
+  const taskExecuted = await task.get()
+  t.context.task = taskData
+  t.is((request.filter(d => { return d.state === 'error' }).length > 0), true)
+  t.is((request.filter(d => { return d.state === 'success' }).length > 0), true)
+  t.deepEqual(taskExecuted.state, 'active')
+  t.truthy(taskExecuted.resend_failed)
+  t.notDeepEqual(taskData.exect_date, taskExecuted.exect_date)
+})
 
 test('Monitor task', async t => {
   await Task.add(t.context.objTest)
