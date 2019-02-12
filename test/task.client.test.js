@@ -10,7 +10,7 @@ let cli = null
 
 test.before(async t => {
   const whkServer = await fixtures.webhook.server()
-  const server = await Server.start()
+  const server = await Server.start('test')
 
   cli = new Client(server.uri, {
     response: 'all'
@@ -34,9 +34,6 @@ test('add Task', async t => {
 })
 
 test('Error add Task exect_date is required', async t => {
-  const server = t.context.server
-  const cli = new Client(server.uri)
-
   const e = await t.throwsAsync(cli.task.add({
     test: 1
   }))

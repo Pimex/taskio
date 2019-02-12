@@ -6,11 +6,12 @@
   "scripts": {
     "lint": "standard",
     "test": "NODE_ENV=test ava -v -s",
-    "build": "npm run lint && babel src --out-dir dist",
+    "build": "babel src --out-dir dist",
     "dev:test": "NODE_ENV=test npm run build && npm run test -- -w",
     "server:start": "npm run build && node ./dist/server",
     "server:init": "npm run build && pm2 start ./dist/server.js --name taskio-server",
-    "cover": "nyc npm run test"
+    "cover": "nyc npm run test",
+    "start": "node ./dist/server"
   },
   "repository": {
     "type": "git",
