@@ -10,22 +10,29 @@ let cli = null
 
 test.before(async t => {
   const whkServer = await fixtures.webhook.server()
-  const server = await Server.start('test')
+  // const server = await Server.start('test')
 
-  cli = new Client(server.uri, {
+  cli = new Client('http://localhost:3000', {
     response: 'all'
   })
 
-  t.context.server = server
+  // t.context.server = server
   t.context.webhookServer = whkServer
 
   t.context.taskData = fixtures.task.data(whkServer)
+})
+
+test.afterEach(async t => {
+  if (t.context.task) {
+    await cli.task.delete(t.context.task.data.id)
+  }
 })
 
 test('add Task', async t => {
   const taskData = t.context.taskData
 
   const newTask = await cli.task.add(taskData)
+  t.context.task = newTask
 
   t.is(newTask.statusCode, 201)
   t.deepEqual(newTask.data.name, taskData.name)
@@ -47,6 +54,7 @@ test('update Task', async t => {
   const newName = uuid.v4()
 
   const newTask = await cli.task.add(taskData)
+  t.context.task = newTask
 
   const updateTask = await cli.task.update(newTask.data.id, {
     name: newName
@@ -64,6 +72,7 @@ test('No update task id', async t => {
   const taskData = t.context.taskData
 
   const newTask = await cli.task.add(taskData)
+  t.context.task = newTask
 
   const updateTask = await cli.task.update(newTask.data.id, {
     id: uuid.v4()
@@ -81,6 +90,7 @@ test('Get all tasks', async t => {
   const taskData = t.context.taskData
 
   const newTask = await cli.task.add(taskData)
+  t.context.task = newTask
 
   const tasks = await cli.task.getAll()
 
@@ -110,6 +120,7 @@ test('Exec task monitor', async t => {
   taskData.exect_date = Moment().add(10, 'second').unix()
 
   const newTask = await cli.task.add(taskData)
+  t.context.task = newTask
 
   const monitor = await cli.task.execMonitor()
 

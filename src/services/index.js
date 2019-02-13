@@ -3,15 +3,28 @@
 import Hapi from 'hapi'
 import routes from './routes'
 import good from 'good'
+import defaults from 'defaults'
 
 const portDefault = process.env.PORT || 3000
-const NODE_ENV = process.env.NODE_ENV || null
+// const NODE_ENV = process.env.NODE_ENV || null
 
 module.exports = {
-  async start (portCustom, host) {
-    const port = (portCustom === 'test') ? null : portCustom || portDefault
-    host = host || '0.0.0.0'
-    let server = new Hapi.Server({
+  async start (opts = {}) {
+    opts = defaults(opts, {
+      host: '0.0.0.0',
+      port: (opts.port === 'test') ? null : opts.port || portDefault,
+      logs: {
+        ops: false,
+        args: false
+      }
+    })
+
+    const { port = portDefault, host, logs = null } = opts
+
+    console.log(host)
+    console.log(port)
+
+    const server = new Hapi.Server({
       host,
       port,
       router: {
@@ -21,13 +34,15 @@ module.exports = {
 
     server.route(routes)
 
-    if (NODE_ENV !== 'test') {
+    if (logs) {
       await server.register({
         plugin: good,
         options: {
+          ops: logs.ops || false,
           reporters: {
             console: [{
-              module: 'good-console'
+              module: 'good-console',
+              args: (logs.args) ? [logs.args] : []
             },
             'stdout'
             ]
