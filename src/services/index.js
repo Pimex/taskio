@@ -21,9 +21,6 @@ module.exports = {
 
     const { port = portDefault, host, logs = null } = opts
 
-    console.log(host)
-    console.log(port)
-
     const server = new Hapi.Server({
       host,
       port,

@@ -10,13 +10,13 @@ let cli = null
 
 test.before(async t => {
   const whkServer = await fixtures.webhook.server()
-  // const server = await Server.start('test')
+  const server = await Server.start('test')
 
-  cli = new Client('http://localhost:3000', {
+  cli = new Client(server.uri, {
     response: 'all'
   })
 
-  // t.context.server = server
+  t.context.server = server
   t.context.webhookServer = whkServer
 
   t.context.taskData = fixtures.task.data(whkServer)
