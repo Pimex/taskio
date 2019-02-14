@@ -1,0 +1,5 @@
+node-modules
+*-lock.*
+Dockerfile
+.dockerignore
+docker-compose.*
