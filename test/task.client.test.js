@@ -46,7 +46,7 @@ test('Error add Task exect_date is required', async t => {
   }))
 
   t.is(e.output.statusCode, 400)
-  t.regex(e.message, /The fiel exect_date is required/)
+  t.regex(e.message, /The field exect_date is required/)
 })
 
 test('update Task', async t => {

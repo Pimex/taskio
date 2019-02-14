@@ -33,7 +33,7 @@ test('Send request error response', async t => {
 
   t.deepEqual(typeof req.id, 'string')
   t.deepEqual(typeof req.statusCode, 'number')
-  t.deepEqual(req.method, 'GET')
+  t.deepEqual(req.method, 'POST')
   t.is(req.statusCode >= 400, true)
 })
 
@@ -44,7 +44,7 @@ test('Send request', async t => {
 
   t.deepEqual(typeof req.id, 'string')
   t.deepEqual(typeof req.statusCode, 'number')
-  t.deepEqual(req.method, 'GET')
+  t.deepEqual(req.method, 'POST')
   t.is(req.statusCode >= 200, true)
 })
 
