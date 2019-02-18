@@ -141,13 +141,13 @@ const routes = [
 
       try {
         let query = body || {
-          exect_date: {
+          'reminder.exect_date': {
             range: {
               init: Moment().unix(),
               end: Moment().add(1, 'minute').unix()
             }
           },
-          state: 'active'
+          'reminder.state': 'active'
         }
 
         const data = await Task.monitor(query)

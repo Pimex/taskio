@@ -40,32 +40,23 @@ test('add Task', async t => {
   t.is(typeof newTask.data.id, 'string')
 })
 
-test('Error add Task exect_date is required', async t => {
-  const e = await t.throwsAsync(cli.task.add({
-    test: 1
-  }))
-
-  t.is(e.output.statusCode, 400)
-  t.regex(e.message, /The field exect_date is required/)
-})
-
 test('update Task', async t => {
   const taskData = t.context.taskData
-  const newName = uuid.v4()
+  const newTitle = uuid.v4()
 
   const newTask = await cli.task.add(taskData)
   t.context.task = newTask
 
   const updateTask = await cli.task.update(newTask.data.id, {
-    name: newName
+    title: newTitle
   })
 
   t.is(newTask.statusCode, 201)
   t.is(updateTask.statusCode, 201)
-  t.deepEqual(newTask.data.name, taskData.name)
-  t.deepEqual(newTask.data.exect_date, taskData.exect_date)
+  t.deepEqual(newTask.data.title, taskData.title)
+  t.deepEqual(newTask.data.reminder.exect_date, taskData.reminder.exect_date)
   t.is(typeof newTask.data.id, 'string')
-  t.is(updateTask.data.name, newName)
+  t.is(updateTask.data.title, newTitle)
 })
 
 test('No update task id', async t => {
@@ -81,7 +72,6 @@ test('No update task id', async t => {
   t.is(newTask.statusCode, 201)
   t.is(updateTask.statusCode, 201)
   t.deepEqual(newTask.data.name, taskData.name)
-  t.deepEqual(newTask.data.exect_date, taskData.exect_date)
   t.is(typeof newTask.data.id, 'string')
   t.is(typeof updateTask.data.id, 'undefined')
 })
@@ -117,7 +107,7 @@ test('Remove task', async t => {
 
 test('Exec task monitor', async t => {
   const taskData = t.context.taskData
-  taskData.exect_date = Moment().add(10, 'second').unix()
+  taskData.reminder.exect_date = Moment().add(10, 'second').unix()
 
   const newTask = await cli.task.add(taskData)
   t.context.task = newTask
