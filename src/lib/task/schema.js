@@ -12,30 +12,37 @@ module.exports = {
     state: {
       value: 'active'
     },
-    exect_date: {
-      require: true,
-      type: 'number'
-    },
-    repeat: {
-      type: 'object',
-      default: {
-        times: 1
-      }
-    },
     owner: {
-      default: null
-    },
-    expirate: {
-      default: 'never'
+      default: 'system'
     },
     type: {
       type: 'string'
     },
-    name: {
+    title: {
+      type: 'string',
+      require: 'true'
+    },
+    description: {
       type: 'string'
     },
-    req: {
+    reminder: {
       type: 'object'
+      /**
+       state: 'disabled',
+       repeat: {
+         type: 'object',
+         default: {
+           times: 1
+         }
+       },
+       exect_date: {
+         require: true,
+         type: 'number'
+       },
+       req: {
+         type: 'object'
+       }
+       **/
     }
   },
 
@@ -46,29 +53,17 @@ module.exports = {
     state: {
       type: 'string'
     },
-    exect_date: {
-      type: 'number'
-    },
-    repeat: {
-      type: 'object'
-    },
-    owner: {
-      default: null
-    },
-    expirate: {
-      default: 'never'
-    },
     type: {
       type: 'string'
     },
-    name: {
+    title: {
       type: 'string'
     },
-    req: {
-      type: 'object'
+    description: {
+      type: 'string'
     },
-    resend_failed: {
-      type: 'number'
+    reminder: {
+      type: 'object'
     }
   }
 }

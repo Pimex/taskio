@@ -3,6 +3,7 @@
 import Hapi from 'hapi'
 import Moment from 'moment'
 import uuid from 'uuid'
+import defaults from 'defaults'
 
 module.exports = {
   webhook: {
@@ -32,18 +33,29 @@ module.exports = {
     }
   },
   task: {
-    data: (whServer) => {
+    data: (whServer = {}) => {
+      whServer = defaults(whServer, {
+        uri: 'localhost'
+      })
       return {
-        name: uuid.v4(),
+        title: 'Create a simple task',
         owner: `${uuid.v4()}@gmail.com`,
-        exect_date: Moment().add(1, 'days').unix(),
-        req: {
-          webhook: {
-            uri: `${whServer.uri}/test`,
-            method: 'POST',
-            body: {
-              title: 'Test task webhook title',
-              description: 'Add new task in your list'
+        description: 'This is the description for a simple task',
+        type: uuid.v4(),
+        reminder: {
+          state: 'active',
+          repeat: {
+            times: 1
+          },
+          exect_date: Moment().add(1, 'days').unix(),
+          req: {
+            webhook: {
+              uri: `${whServer.uri}/test`,
+              method: 'POST',
+              body: {
+                title: 'Test task webhook title',
+                description: 'Add new task in your list'
+              }
             }
           }
         }

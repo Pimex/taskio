@@ -4,50 +4,13 @@ import test from 'ava'
 import { Task } from '../src'
 import Moment from 'moment'
 import delay from 'delay'
-import Hapi from 'hapi'
-
-async function startServer () {
-  const server = Hapi.server({
-    host: '0.0.0.0'
-  })
-
-  server.route({
-    method: '*',
-    path: '/{params*}',
-    handler: (request, h) => {
-      const res = {
-        payload: request.payload,
-        params: request.params,
-        query: request.query,
-        headers: request.headers
-      }
-
-      return h.response(res).code(200)
-    }
-  })
-
-  await server.start()
-
-  return server.info
-}
+import fixtures from './fixtures'
+import uuid from 'uuid'
 
 test.beforeEach(async t => {
-  t.context.objTest = {
-    name: 'Willy',
-    owner: 'wsernalaverde@gmail.com',
-    state: 'paused',
-    exect_date: Moment().unix(),
-    req: {
-      webhook: {
-        uri: 'http://localhost:3003/test',
-        method: 'POST',
-        body: {
-          title: 'Tarea de prueba',
-          description: 'Realizar llamada al cliente'
-        }
-      }
-    }
-  }
+  const whServer = await fixtures.webhook.server()
+  t.context.whServer = whServer
+  t.context.objTest = fixtures.task.data(whServer)
 })
 
 test.afterEach(async t => {
@@ -66,9 +29,27 @@ test('Add task', async t => {
   t.truthy(taskData._id)
 })
 
+test('Add simple task', async t => {
+  let taskData = t.context.objTest
+  delete taskData.reminder
+  delete taskData.account
+  delete taskData.type
+  delete taskData.description
+  delete taskData.owner
+
+  taskData = await Task.add(taskData)
+
+  t.context.task = taskData
+
+  t.deepEqual(t.context.objTest.title, taskData.title)
+  t.deepEqual(taskData.state, 'active')
+  t.deepEqual(taskData.owner, 'system')
+  t.truthy(taskData._id)
+})
+
 test('Error add task data invalid', async t => {
   let err = await t.throwsAsync(() => {
-    return Task.add({ email: 'wserna@pimex.co' })
+    return Task.add({ email: `${uuid.v4()}@gmail.com` })
   })
   t.deepEqual(err.output.statusCode, 400)
 })
@@ -102,7 +83,7 @@ test('Update task data', async t => {
 test('Error update task data invalid', async t => {
   const newTask = await Task.add(t.context.objTest)
   const task = new Task(newTask.id)
-  newTask.email = 'wserna@pimex.co'
+  newTask.email = `${uuid.v4()}@gmail.com`
   const taskData = await task.update(newTask)
   t.context.task = newTask
   t.is(taskData.email, undefined)
@@ -123,91 +104,102 @@ test('Get all tasks', async t => {
 test('Get all task by query', async t => {
   const newTask = await Task.add(t.context.objTest)
   let res = await Task.getAll({
-    name: newTask['name']
+    title: newTask['title']
   })
+
   t.context.task = newTask
   t.is((res.filter(d => { return d.name === newTask.name }).length > 0), true)
 })
 
 test('Exec task without repeat', async t => {
-  const server = await startServer()
-  t.context.objTest.req.webhook.uri = server.uri
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
-  t.context.task = taskData
   const taskExecuted = await task.get()
-  t.deepEqual(taskExecuted.state, 'ended')
+
+  t.context.task = taskData
+
+  t.deepEqual(taskExecuted.reminder.state, 'ended')
   t.truthy(request.statusCode)
   t.deepEqual(taskData.id, request.task)
 })
 
 test('Exec task with repeat', async t => {
-  const server = await startServer()
-  t.context.objTest.req.webhook.uri = server.uri
-  t.context.objTest.repeat = {
+  let newTask = t.context.objTest
+
+  newTask.reminder.repeat = {
     times: 2,
     intDays: 15
   }
-  const taskData = await Task.add(t.context.objTest)
+  const taskData = await Task.add(newTask)
   const task = new Task(taskData.id)
   const request = await task.execute()
   t.context.task = taskData
   const taskExecuted = await task.get()
 
-  t.deepEqual(taskExecuted.state, 'active')
+  t.deepEqual(taskExecuted.reminder.state, 'active')
   t.deepEqual(taskData.id, request.task)
-  t.notDeepEqual(taskData.exect_date, taskExecuted.exect_date)
+  t.notDeepEqual(taskData.reminder.exect_date, taskExecuted.reminder.exect_date)
   t.truthy(request.statusCode)
 })
 
 test('Error exec task', async t => {
+  const newTask = t.context.objTest
+  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
+
   const taskExecuted = await task.get()
   t.context.task = taskData
   t.deepEqual(request.state, 'error')
-  t.deepEqual(taskExecuted.state, 'failed')
-  t.truthy(taskExecuted.resend_failed)
+  t.deepEqual(taskExecuted.reminder.state, 'failed')
+  t.truthy(taskExecuted.reminder.resend_failed)
 })
 
 test('Error exec task three times and caneled', async t => {
-  t.context.objTest.repeat = { times: 2, intDays: 15 }
-  const taskData = await Task.add(t.context.objTest)
+  const newTask = t.context.objTest
+  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
+  newTask.reminder.repeat = { times: 2, intDays: 15 }
+
+  const taskData = await Task.add(newTask)
   const task = new Task(taskData.id)
+
   for (let i = 0; i < 3; i++) {
     await task.execute()
   }
+
   const taskExecuted = await task.get()
   t.context.task = taskData
-  t.deepEqual(taskExecuted.state, 'canceled')
-  t.truthy(taskExecuted.resend_failed)
+  t.deepEqual(taskExecuted.reminder.state, 'canceled')
+  t.truthy(taskExecuted.reminder.resend_failed)
 })
 
 test('Exec task with error and then succes', async t => {
-  const server = await startServer()
-  t.context.objTest.repeat = {
-    times: 2,
-    intDays: 15
-  }
+  let taskExecuted = null
+  const newTask = t.context.objTest
+  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
+  newTask.reminder.repeat = { times: 2, intDays: 15 }
+
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   let request = []
   for (let i = 0; i < 2; i++) {
     if (i === 1) {
-      taskData.req.webhook.uri = server.uri
+      taskData.reminder.req.webhook.uri = t.context.whServer.uri
       await task.update(taskData)
     }
+
     request.push(await task.execute())
   }
-  const taskExecuted = await task.get()
+
+  taskExecuted = await task.get()
+
   t.context.task = taskData
   t.is((request.filter(d => { return d.state === 'error' }).length > 0), true)
   t.is((request.filter(d => { return d.state === 'success' }).length > 0), true)
-  t.deepEqual(taskExecuted.state, 'active')
-  t.truthy(taskExecuted.resend_failed)
-  t.notDeepEqual(taskData.exect_date, taskExecuted.exect_date)
+  t.deepEqual(taskExecuted.reminder.state, 'active')
+  t.notDeepEqual(taskData.reminder.exect_date, taskExecuted.reminder.exect_date)
 })
 
 test('Monitor task', async t => {

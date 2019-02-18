@@ -90,67 +90,77 @@ class Task {
 
     let task = await db.get(this.id)
 
-    if (task.req && task.req.webhook) {
-      const webhook = task.req.webhook
-      let state = 'active'
-      try {
-        webhook.json = true
-        webhook.resolveWithFullResponse = true
-        resExec = await $request(webhook)
-        resExec = {
-          headers: resExec.headers,
-          statusCode: resExec.statusCode,
-          body: resExec.body
-        }
-      } catch (error) {
-        state = 'failed'
-        resExec = {
-          headers: error.response ? error.response.headers : '',
-          statusCode: error.statusCode || 500,
-          body: error.response ? error.response.body : error.message
-        }
+    if (!task.reminder.req && !task.reminder.req.webhook) {
+      return Promise.resolve({})
+    }
+
+    const webhook = task.reminder.req.webhook
+    let state = 'active'
+    try {
+      webhook.json = true
+      webhook.resolveWithFullResponse = true
+      resExec = await $request(webhook)
+      resExec = {
+        headers: resExec.headers,
+        statusCode: resExec.statusCode,
+        body: resExec.body
       }
-      try {
-        let res = await Request.add({
-          statusCode: resExec.statusCode,
-          method: webhook.method,
-          task: task.id,
-          payload: webhook,
-          response: resExec,
-          state: resExec.statusCode >= 300 ? 'error' : 'success'
-        })
-        let query = { task: this.id }
-        if (state !== 'failed') query.state = 'success'
-        let cantRequest = await Request.getAll(query, {
-          limit: state === 'active' ? 0 : 3,
-          sort: { _id: -1 }
-        })
-        // console.log(cantRequest)
-        if (state === 'failed') {
-          if (cantRequest.filter(d => { return d.state === 'error' }).length < 3) {
-            let newDate = task.resend_failed || task.exect_date
-            newDate = Moment.unix(newDate).add(1, 'hour').unix()
-            await db.update(this.id, {
-              resend_failed: newDate,
-              state
-            })
-          } else {
-            await db.update(this.id, { state: 'canceled' })
-          }
+    } catch (error) {
+      state = 'failed'
+      resExec = {
+        headers: error.response ? error.response.headers : '',
+        statusCode: error.statusCode || 500,
+        body: error.response ? error.response.body : error.message
+      }
+    }
+    try {
+      let res = await Request.add({
+        statusCode: resExec.statusCode,
+        method: webhook.method,
+        task: task.id,
+        payload: webhook,
+        response: resExec,
+        state: resExec.statusCode >= 300 ? 'error' : 'success'
+      })
+      let query = { task: this.id }
+      if (state !== 'failed') query.state = 'success'
+      let cantRequest = await Request.getAll(query, {
+        limit: state === 'active' ? 0 : 3,
+        sort: { _id: -1 }
+      })
+      // console.log(cantRequest)
+      if (state === 'failed') {
+        if (cantRequest.filter(d => { return d.state === 'error' }).length < 3) {
+          let newDate = task.reminder.resend_failed || task.reminder.exect_date
+          newDate = Moment.unix(newDate).add(1, 'hour').unix()
+          task.reminder.resend_failed = newDate
+          task.reminder.state = state
+          await db.update(this.id, {
+            reminder: task.reminder
+          })
         } else {
-          if (task.repeat && task.repeat.times > 1 && cantRequest.length < task.repeat.times) {
-            const newDate = Moment.unix(task.exect_date).add(task.repeat.intDays, 'day').unix()
-            await db.update(this.id, {
-              exect_date: newDate
-            })
-          } else {
-            await db.update(this.id, { state: 'ended' })
-          }
+          task.reminder.state = 'canceled'
+          await db.update(this.id, {
+            reminder: task.reminder
+          })
         }
-        return Promise.resolve(res)
-      } catch (error) {
-        return Promise.reject(new Boom(error))
+      } else {
+        if (task.reminder.repeat && task.reminder.repeat.times > 1 && cantRequest.length < task.reminder.repeat.times) {
+          const newDate = Moment.unix(task.reminder.exect_date).add(task.reminder.repeat.intDays, 'day').unix()
+          task.reminder.exect_date = newDate
+          await db.update(this.id, {
+            reminder: task.reminder
+          })
+        } else {
+          task.reminder.state = 'ended'
+          await db.update(this.id, {
+            reminder: task.reminder
+          })
+        }
       }
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(new Boom(error))
     }
   }
 
