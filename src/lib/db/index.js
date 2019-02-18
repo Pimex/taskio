@@ -102,7 +102,9 @@ class Db {
       const db = await this.getInstance()
       const item = await this.get(id)
 
-      await db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
+      if (Object.keys(data).length > 0) {
+        await db.collection(this.collection).updateOne({ id: item.id }, { $set: data })
+      }
 
       return Promise.resolve(data)
     } catch (error) {
