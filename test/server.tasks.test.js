@@ -6,6 +6,7 @@ import request from 'request-promise'
 import { Task } from '../src'
 import Moment from 'moment'
 import delay from 'delay'
+import fixtures from './fixtures'
 
 test.before(async t => {
   const server = await Server.start('test')
@@ -14,22 +15,8 @@ test.before(async t => {
 })
 
 test.beforeEach(async t => {
-  t.context.objTest = {
-    name: 'Willy',
-    owner: 'wsernalaverde@gmail.com',
-    state: 'paused',
-    exect_date: Moment().unix(),
-    req: {
-      webhook: {
-        uri: 'http://localhost:3003/test',
-        method: 'POST',
-        body: {
-          title: 'Tarea de prueba',
-          description: 'Realizar llamada al cliente'
-        }
-      }
-    }
-  }
+  const wbServer = await fixtures.webhook.server()
+  t.context.objTest = fixtures.task.data(wbServer)
 })
 
 test.afterEach(async t => {
