@@ -21,6 +21,17 @@ test.afterEach(async t => {
   }
 })
 
+test('Add single task without end_date', async t => {
+  const taskData = t.context.objTest
+  delete taskData.end_date
+  const newTaskData = await Task.add(taskData)
+  t.context.task = newTaskData
+
+  t.deepEqual(t.context.objTest.owner, taskData.owner)
+  t.deepEqual(newTaskData.state, 'active')
+  t.truthy(typeof newTaskData.end_date)
+})
+
 test('Add task', async t => {
   const taskData = await Task.add(t.context.objTest)
   t.context.task = taskData

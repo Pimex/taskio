@@ -22,7 +22,12 @@ class Task {
       data._created = Moment().unix()
       data = Schema.validate(data, schemaTemplate.add)
 
+      if (data.start_date && !data.end_date) {
+        data.end_date = Moment.unix(data.start_date).endOf('day').unix()
+      }
+
       if (data.reminder) {
+        data.reminder.uri = data.reminder.uri || data.reminder.url
         data.reminder = Schema.validate(data.reminder, schemaTemplate.reminder)
       }
 
