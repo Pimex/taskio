@@ -34,30 +34,30 @@ module.exports = {
   },
   task: {
     data: (whServer = {}) => {
+      return {
+        title: 'Create a simple task',
+        owner: `${uuid.v4()}@test.com`,
+        description: 'This is the description for a simple task',
+        type: uuid.v4(),
+        start_date: Moment().unix(),
+        end_date: Moment().add(1, 'days').unix(),
+        account: uuid.v4()
+      }
+    },
+    reminder: (whServer = {}) => {
       whServer = defaults(whServer, {
         uri: 'localhost'
       })
       return {
-        title: 'Create a simple task',
-        owner: `${uuid.v4()}@gmail.com`,
-        description: 'This is the description for a simple task',
-        type: uuid.v4(),
-        reminder: {
-          state: 'active',
-          repeat: {
-            times: 1
-          },
-          exect_date: Moment().add(1, 'days').unix(),
-          req: {
-            webhook: {
-              uri: `${whServer.uri}/test`,
-              method: 'POST',
-              body: {
-                title: 'Test task webhook title',
-                description: 'Add new task in your list'
-              }
-            }
-          }
+        state: 'active',
+        repeat: {
+          times: 1
+        },
+        exect_date: Moment().add(1, 'days').unix(),
+        uri: `${whServer.uri}/test`,
+        method: 'POST',
+        data: {
+          test: 'testvalue'
         }
       }
     }

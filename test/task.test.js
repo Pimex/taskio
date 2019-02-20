@@ -10,7 +10,8 @@ import uuid from 'uuid'
 test.beforeEach(async t => {
   const whServer = await fixtures.webhook.server()
   t.context.whServer = whServer
-  t.context.objTest = fixtures.task.data(whServer)
+  t.context.objTest = fixtures.task.data()
+  t.context.reminder = fixtures.task.reminder(whServer)
 })
 
 test.afterEach(async t => {
@@ -112,25 +113,31 @@ test('Get all task by query', async t => {
 })
 
 test('Exec task without repeat', async t => {
-  const taskData = await Task.add(t.context.objTest)
-  const task = new Task(taskData.id)
+  const taskData = t.context.objTest
+  taskData.reminder = t.context.reminder
+
+  const newTaskData = await Task.add(t.context.objTest)
+
+  const task = new Task(newTaskData.id)
   const request = await task.execute()
   const taskExecuted = await task.get()
 
-  t.context.task = taskData
+  t.context.task = newTaskData
 
   t.deepEqual(taskExecuted.reminder.state, 'ended')
   t.truthy(request.statusCode)
-  t.deepEqual(taskData.id, request.task)
+  t.deepEqual(newTaskData.id, request.task)
 })
 
 test('Exec task with repeat', async t => {
-  let newTask = t.context.objTest
+  const newTask = t.context.objTest
+  newTask.reminder = t.context.reminder
 
   newTask.reminder.repeat = {
     times: 2,
     intDays: 15
   }
+
   const taskData = await Task.add(newTask)
   const task = new Task(taskData.id)
   const request = await task.execute()
@@ -145,7 +152,9 @@ test('Exec task with repeat', async t => {
 
 test('Error exec task', async t => {
   const newTask = t.context.objTest
-  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
+  newTask.reminder = t.context.reminder
+  newTask.reminder.uri = 'http://test.uri.com'
+
   const taskData = await Task.add(t.context.objTest)
   const task = new Task(taskData.id)
   const request = await task.execute()
@@ -159,7 +168,8 @@ test('Error exec task', async t => {
 
 test('Error exec task three times and caneled', async t => {
   const newTask = t.context.objTest
-  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
+  newTask.reminder = t.context.reminder
+  newTask.reminder.uri = 'http://test.uri.com'
   newTask.reminder.repeat = { times: 2, intDays: 15 }
 
   const taskData = await Task.add(newTask)
@@ -178,7 +188,8 @@ test('Error exec task three times and caneled', async t => {
 test('Exec task with error and then succes', async t => {
   let taskExecuted = null
   const newTask = t.context.objTest
-  newTask.reminder.req.webhook.uri = 'http://test.uri.com'
+  newTask.reminder = t.context.reminder
+  newTask.reminder.uri = 'http://test.uri.com'
   newTask.reminder.repeat = { times: 2, intDays: 15 }
 
   const taskData = await Task.add(t.context.objTest)
@@ -186,7 +197,7 @@ test('Exec task with error and then succes', async t => {
   let request = []
   for (let i = 0; i < 2; i++) {
     if (i === 1) {
-      taskData.reminder.req.webhook.uri = t.context.whServer.uri
+      taskData.reminder.uri = t.context.whServer.uri
       await task.update(taskData)
     }
 

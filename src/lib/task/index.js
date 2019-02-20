@@ -22,6 +22,10 @@ class Task {
       data._created = Moment().unix()
       data = Schema.validate(data, schemaTemplate.add)
 
+      if (data.reminder) {
+        data.reminder = Schema.validate(data.reminder, schemaTemplate.reminder)
+      }
+
       let res = await db.add(data)
 
       return Promise.resolve(res)
@@ -90,13 +94,21 @@ class Task {
 
     let task = await db.get(this.id)
 
-    if (!task.reminder.req && !task.reminder.req.webhook) {
+    if (!task.reminder) {
       return Promise.resolve({})
     }
 
-    const webhook = task.reminder.req.webhook
+    const webhook = {
+      uri: task.reminder.uri,
+      method: task.reminder.method,
+      body: {
+        data: task.reminder.data,
+        task
+      }
+    }
     let state = 'active'
     try {
+      webhook.body.task = task
       webhook.json = true
       webhook.resolveWithFullResponse = true
       resExec = await $request(webhook)
@@ -114,6 +126,8 @@ class Task {
       }
     }
     try {
+      delete webhook.body.task
+
       let res = await Request.add({
         statusCode: resExec.statusCode,
         method: webhook.method,
@@ -122,6 +136,7 @@ class Task {
         response: resExec,
         state: resExec.statusCode >= 300 ? 'error' : 'success'
       })
+
       let query = { task: this.id }
       if (state !== 'failed') query.state = 'success'
       let cantRequest = await Request.getAll(query, {
@@ -147,14 +162,13 @@ class Task {
       } else {
         if (task.reminder.repeat && task.reminder.repeat.times > 1 && cantRequest.length < task.reminder.repeat.times) {
           const newDate = Moment.unix(task.reminder.exect_date).add(task.reminder.repeat.intDays, 'day').unix()
-          task.reminder.exect_date = newDate
+
           await db.update(this.id, {
-            reminder: task.reminder
+            'reminder.exect_date': newDate
           })
         } else {
-          task.reminder.state = 'ended'
           await db.update(this.id, {
-            reminder: task.reminder
+            'reminder.state': 'ended'
           })
         }
       }
