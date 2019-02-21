@@ -35,6 +35,12 @@ module.exports = {
     reminder: {
       type: 'object',
       default: false
+    },
+    category: {
+      type: 'string'
+    },
+    data: {
+      default: null
     }
   },
 
@@ -56,6 +62,12 @@ module.exports = {
     },
     reminder: {
       type: 'object'
+    },
+    category: {
+      type: 'string'
+    },
+    data: {
+      default: null
     }
   },
 

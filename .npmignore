@@ -3,3 +3,4 @@ node-modules
 Dockerfile
 .dockerignore
 docker-compose.*
+.nyc_output
