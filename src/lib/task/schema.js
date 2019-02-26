@@ -50,11 +50,7 @@ module.exports = {
     },
     state: {
       opts: ['active', 'expired', 'completed'],
-<<<<<<< HEAD
       type: 'string'
-=======
-      type: 'array'
->>>>>>> ae7cc0f6e91199316d9509f20675354f21f3e924
     },
     type: {
       type: 'string'
