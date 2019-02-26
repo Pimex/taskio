@@ -49,6 +49,7 @@ module.exports = {
       default: null
     },
     state: {
+      opts: ['active', 'expired', 'completed'],
       type: 'string'
     },
     type: {
