@@ -1,7 +1,7 @@
 'use strict'
 
 import test from 'ava'
-import { Db } from '../src'
+import Db from '../src/lib/db'
 import uuid from 'uuid/v4'
 
 test.before(async t => {

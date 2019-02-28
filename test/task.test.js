@@ -21,6 +21,37 @@ test.afterEach(async t => {
   }
 })
 
+test('Get by array data', async t => {
+  let newTaskData = t.context.objTest
+  const account = ['456', 'test@test.com']
+
+  newTaskData.account = account
+
+  const newTask = await Task.add(newTaskData)
+
+  const tasks = await Task.getAll({
+    account: 'test@test.com'
+  })
+
+  t.context.task = newTask
+  t.is(tasks.filter(t => t.id === newTask.id).length > 0, true)
+})
+
+test('Update invalid state', async t => {
+  const taskData = t.context.objTest
+  const newTask = await Task.add(taskData)
+  const task = new Task(newTask.id)
+
+  const newTaskData = {
+    state: 'any'
+  }
+
+  const updateData = await task.update(newTaskData)
+
+  t.context.task = newTask
+  t.is(Object.keys(updateData).length, 0)
+})
+
 test('Add single task without end_date', async t => {
   const taskData = t.context.objTest
   delete taskData.end_date
@@ -86,10 +117,13 @@ test('Error Get task id not found', async t => {
 test('Update task data', async t => {
   const newTask = await Task.add(t.context.objTest)
   const task = new Task(newTask.id)
-  newTask.state = 'paused'
-  const taskData = await task.update(newTask)
+  const newTaskData = {
+    state: 'completed'
+  }
+
+  const taskData = await task.update(newTaskData)
   t.context.task = newTask
-  t.deepEqual(taskData.state, newTask.state)
+  t.deepEqual(taskData.state, newTaskData.state)
 })
 
 test('Error update task data invalid', async t => {
@@ -244,6 +278,7 @@ test('Monitor task', async t => {
     },
     name: 'John'
   })
+
   t.is((taskToExec.filter(d => { return d._created < timeInit && d._created > timeEnd }).length <= 0), true)
   t.is((taskToExec.filter(d => { return d.name !== 'John' }).length <= 0), true)
 })
