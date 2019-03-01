@@ -22,6 +22,7 @@ const routes = [
           statusCode: 201
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 
@@ -66,6 +67,24 @@ const routes = [
       let res
 
       try {
+        Object.keys(query).forEach((k) => {
+          let key = k
+          let val = query[key]
+
+          if (typeof val !== 'string') {
+            return
+          }
+
+          if (val.indexOf(',') > -1) {
+            val = val.split(',')
+            query[key] = {
+              $in: val
+            }
+          }
+        })
+
+        console.log(query)
+
         const data = await Task.getAll(query)
 
         res = {
@@ -73,6 +92,7 @@ const routes = [
           statusCode: 200
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 
