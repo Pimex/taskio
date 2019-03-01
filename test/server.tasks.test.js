@@ -7,6 +7,7 @@ import { Task } from '../src'
 import Moment from 'moment'
 import delay from 'delay'
 import fixtures from './fixtures'
+import uuid from 'uuid'
 
 test.before(async t => {
   const server = await Server.start('test')
@@ -24,6 +25,68 @@ test.afterEach(async t => {
     const task = new Task(t.context.task.id)
     await task.delete()
   }
+})
+
+test('Remove user task', async t => {
+  const taskData = t.context.objTest
+  const users = [`${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  taskData.users = users
+  const baseUrl = t.context.baseurl
+
+  let res = await request({
+    uri: `${baseUrl}`,
+    method: 'POST',
+    json: true,
+    body: t.context.objTest
+  })
+
+  const taskId = res.data.id
+
+  t.context.task = res.data
+  t.deepEqual(res.data.users, users)
+  t.deepEqual(res.statusCode, 201)
+  t.deepEqual(t.context.objTest.owner, res.data.owner)
+  t.deepEqual(res.data.state, 'active')
+  t.truthy(res.data._id, true)
+
+  res = await request({
+    uri: `${baseUrl}/${taskId}`,
+    method: 'DELETE',
+    json: true,
+    body: {
+      users: users[0]
+    }
+  })
+
+  const newTaskData = await request({
+    uri: `${baseUrl}/${taskId}`,
+    method: 'GET',
+    json: true
+  })
+
+  t.is(newTaskData.data.users.indexOf(users[0]) < 0, true)
+  t.deepEqual(res.statusCode, 200)
+})
+
+test('Add task users', async t => {
+  const taskData = t.context.objTest
+  const users = [`${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  taskData.users = users
+  const baseUrl = t.context.baseurl
+
+  const res = await request({
+    uri: `${baseUrl}`,
+    method: 'POST',
+    json: true,
+    body: taskData
+  })
+
+  t.context.task = res.data
+  t.deepEqual(res.statusCode, 201)
+  t.deepEqual(t.context.objTest.owner, res.data.owner)
+  t.deepEqual(res.data.state, 'active')
+  t.deepEqual(res.data.users, users)
+  t.truthy(res.data._id, true)
 })
 
 test('Add task', async t => {

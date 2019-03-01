@@ -112,11 +112,12 @@ const routes = [
     path: '/tasks/{id}',
     handler: async (request, h) => {
       const params = request.params
+      const body = request.payload
       let res
 
       try {
         const task = new Task(params.id)
-        const data = await task.delete()
+        const data = await task.delete(body)
 
         res = {
           data,
