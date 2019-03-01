@@ -41,6 +41,10 @@ module.exports = {
     },
     data: {
       default: null
+    },
+    users: {
+      type: 'array',
+      default: []
     }
   },
 
@@ -69,6 +73,9 @@ module.exports = {
     },
     data: {
       default: null
+    },
+    users: {
+      type: 'array'
     }
   },
 
@@ -97,6 +104,12 @@ module.exports = {
     },
     data: {
       type: 'object'
+    }
+  },
+
+  delete: {
+    users: {
+      type: 'string'
     }
   }
 }

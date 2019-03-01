@@ -20,6 +20,13 @@ class Task {
   static async add (data) {
     try {
       data._created = Moment().unix()
+
+      if (data.users) {
+        if (typeof data.users === 'string') {
+          data.users = [data.users]
+        }
+      }
+
       data = Schema.validate(data, schemaTemplate.add)
 
       if (data.start_date && !data.end_date) {
@@ -61,6 +68,26 @@ class Task {
 
   async update (data) {
     try {
+      const taskData = await this.get()
+      let users = taskData.users
+
+      if (data.users) {
+        switch (typeof data.users) {
+          case 'string':
+            users.push(data.users)
+            break
+          case 'object':
+            users = users.concat(data.users)
+            break
+          case 'number':
+            users.push(String(data.users))
+            break
+          default:
+            data.users = []
+        }
+        data.users = Array.from(new Set(users))
+      }
+
       data = Schema.validate(data, schemaTemplate.update)
 
       let res = await db.update(this.id, data)
@@ -81,12 +108,29 @@ class Task {
     }
   }
 
-  async delete () {
+  async delete (params = false) {
     try {
-      await Request.deleteMany({
-        task: this.id
-      })
-      let res = await db.delete(this.id)
+      const taskData = await this.get()
+      let res = []
+      if (!params) {
+        await Request.deleteMany({
+          task: this.id
+        })
+        res = await db.delete(this.id)
+      } else {
+        params = Schema.validate(params, schemaTemplate.delete)
+
+        if (params.users) {
+          let users = taskData.users
+          let index = users.indexOf(params.users)
+          if (index > -1) {
+            users.splice(index, 1)
+            res = await db.update(this.id, {
+              users
+            })
+          }
+        }
+      }
 
       return Promise.resolve(res)
     } catch (error) {

@@ -21,6 +21,130 @@ test.afterEach(async t => {
   }
 })
 
+test('Update task, delete a user ', async t => {
+  const newTaskData = t.context.objTest
+  const user = `${uuid.v4()}@test.com`
+  const users = [user, `${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  newTaskData.users = users
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+  const updateTask = await task.delete({
+    users: user
+  })
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.is(typeof newTask.id, 'string')
+  t.is(updateTask.users.indexOf(user) < 0, true)
+  t.is(taskData.users.indexOf(user) < 0, true)
+  t.deepEqual(taskData.users.length, 2)
+})
+
+test('Update task users by Array', async t => {
+  const newTaskData = t.context.objTest
+  const user = `${uuid.v4()}@test.com`
+  const users = [user, `${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  newTaskData.users = users
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+
+  const updateTask = await task.update({
+    users: [user, `${uuid.v4()}@test.com`]
+  })
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.is(typeof newTask.id, 'string')
+  t.is(updateTask.users.indexOf(user) < 0, false)
+  t.is(taskData.users.indexOf(user) < 0, false)
+  t.deepEqual(taskData.users.length, 4)
+})
+
+test('Update task users by string', async t => {
+  const newTaskData = t.context.objTest
+  const user = `${uuid.v4()}@test.com`
+  const users = [`${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  newTaskData.users = users
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+
+  const updateTask = await task.update({
+    users: user
+  })
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.is(typeof newTask.id, 'string')
+  t.is(updateTask.users.indexOf(user) < 0, false)
+  t.is(taskData.users.indexOf(user) < 0, false)
+  t.is(taskData.users.length === 3, true)
+})
+
+test('Get task by user', async t => {
+  let newTaskData = t.context.objTest
+
+  const users = [`${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  newTaskData.users = users
+
+  const newTask = await Task.add(newTaskData)
+
+  const tasks = await Task.getAll({
+    users: users[0]
+  })
+
+  t.context.task = newTask
+  t.is(tasks.length > 0, true)
+  t.deepEqual(tasks[0].users, users)
+})
+
+test('Add task, assign users Array', async t => {
+  let newTaskData = t.context.objTest
+
+  const users = [`${uuid.v4()}@test.com`, `${uuid.v4()}@test.com`]
+  newTaskData.users = users
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.deepEqual(taskData.users, users)
+})
+
+test('Add task, assign user string', async t => {
+  let newTaskData = t.context.objTest
+
+  const user = `${uuid.v4()}@test.com`
+  newTaskData.users = user
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.is(taskData.users.indexOf(user) < 0, false)
+})
+
+test('Add task default user', async t => {
+  let newTaskData = t.context.objTest
+
+  const newTask = await Task.add(newTaskData)
+  const task = new Task(newTask.id)
+
+  const taskData = await task.get()
+
+  t.context.task = newTask
+  t.is(taskData.users.length, 0)
+})
+
 test('Get by array data', async t => {
   let newTaskData = t.context.objTest
   const account = ['456', 'test@test.com']
