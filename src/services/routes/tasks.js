@@ -83,8 +83,6 @@ const routes = [
           }
         })
 
-        console.log(query)
-
         const data = await Task.getAll(query)
 
         res = {
