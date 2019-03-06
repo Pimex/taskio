@@ -49,6 +49,7 @@ const routes = [
           statusCode: 201
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 
@@ -116,6 +117,7 @@ const routes = [
           statusCode: 200
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 
@@ -142,6 +144,7 @@ const routes = [
           statusCode: 200
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 
@@ -176,6 +179,7 @@ const routes = [
           statusCode: 200
         }
       } catch (e) {
+        request.log('error', e)
         res = e.output.payload
       }
 

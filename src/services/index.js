@@ -38,7 +38,7 @@ module.exports = {
           ops: logs.ops || false,
           reporters: {
             console: [{
-              module: 'good-console',
+              module: require('./logger'),
               args: (logs.args) ? [logs.args] : []
             },
             'stdout'
