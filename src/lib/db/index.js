@@ -32,7 +32,6 @@ class Db {
 
       return url
     } catch (e) {
-      return new Boom(e)
     }
   }
 
