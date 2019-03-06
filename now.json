@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [{ "src": "dist/server.js", "use": "@now/node-server" }],
+  "env": {
+    "TASKIO_DB_URL": ""
+  },
+  "build": {
+    "env": {
+      "TASKIO_DB_URL": ""
+    }
+  },
+  "routes": [
+    { "src": "/(.*)", "dest": "dist/server.js"}
+  ]
+}
