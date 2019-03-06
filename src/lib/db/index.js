@@ -5,7 +5,7 @@ import Boom from 'boom'
 import { MongoClient } from 'mongodb'
 import Utils from '../utils'
 
-const config = getfig.get('modules.db')
+const config = getfig.get('modules.db') || {}
 let instance = false
 
 class Db {
@@ -22,7 +22,7 @@ class Db {
 
   static getUrl ({ host = null, dbName = null, url = null }) {
     try {
-      url = url || config.url
+      url = url || config.url || process.env.TASKIO_DB_URL
 
       if (!url) {
         dbName = dbName || config.dbName
@@ -32,7 +32,7 @@ class Db {
 
       return url
     } catch (e) {
-      return new Boom(e)
+      throw new Boom(e)
     }
   }
 
