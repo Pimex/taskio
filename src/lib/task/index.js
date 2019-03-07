@@ -17,7 +17,7 @@ class Task {
     this.id = id
   }
 
-  static async add (data) {
+  static async add (data = {}) {
     try {
       data._created = Moment().unix()
 
@@ -141,26 +141,27 @@ class Task {
   async execute () {
     let resExec = {}
 
-    let task = await db.get(this.id)
+    let taskData = await db.get(this.id)
 
-    if (!task.reminder) {
+    if (!taskData.reminder || taskData.reminder.state === 'ended') {
       return Promise.resolve({})
     }
 
-    const webhook = {
-      uri: task.reminder.uri,
-      method: task.reminder.method,
-      body: {
-        data: task.reminder.data,
-        task
-      }
-    }
     let state = 'active'
+    const webhook = {
+      uri: taskData.reminder.uri,
+      method: taskData.reminder.method || 'POST',
+      body: {
+        data: taskData.reminder.data || null,
+        task: taskData
+      },
+      json: true,
+      resolveWithFullResponse: true
+    }
+
     try {
-      webhook.body.task = task
-      webhook.json = true
-      webhook.resolveWithFullResponse = true
       resExec = await $request(webhook)
+
       resExec = {
         headers: resExec.headers,
         statusCode: resExec.statusCode,
@@ -175,13 +176,11 @@ class Task {
       }
     }
     try {
-      delete webhook.body.task
-
       let res = await Request.add({
         statusCode: resExec.statusCode,
         method: webhook.method,
-        task: task.id,
-        payload: webhook,
+        task: taskData.id,
+        payload: webhook.body,
         response: resExec,
         state: resExec.statusCode >= 300 ? 'error' : 'success'
       })
@@ -192,25 +191,25 @@ class Task {
         limit: state === 'active' ? 0 : 3,
         sort: { _id: -1 }
       })
-      // console.log(cantRequest)
+
       if (state === 'failed') {
         if (cantRequest.filter(d => { return d.state === 'error' }).length < 3) {
-          let newDate = task.reminder.resend_failed || task.reminder.exect_date
+          let newDate = taskData.reminder.resend_failed || taskData.reminder.exect_date
           newDate = Moment.unix(newDate).add(1, 'hour').unix()
-          task.reminder.resend_failed = newDate
-          task.reminder.state = state
+          taskData.reminder.resend_failed = newDate
+          taskData.reminder.state = state
           await db.update(this.id, {
-            reminder: task.reminder
+            reminder: taskData.reminder
           })
         } else {
-          task.reminder.state = 'canceled'
+          taskData.reminder.state = 'canceled'
           await db.update(this.id, {
-            reminder: task.reminder
+            reminder: taskData.reminder
           })
         }
       } else {
-        if (task.reminder.repeat && task.reminder.repeat.times > 1 && cantRequest.length < task.reminder.repeat.times) {
-          const newDate = Moment.unix(task.reminder.exect_date).add(task.reminder.repeat.intDays, 'day').unix()
+        if (taskData.reminder.repeat && taskData.reminder.repeat.times > 1 && cantRequest.length < taskData.reminder.repeat.times) {
+          const newDate = Moment.unix(taskData.reminder.exect_date).add(taskData.reminder.repeat.intDays, 'day').unix()
 
           await db.update(this.id, {
             'reminder.exect_date': newDate
@@ -233,13 +232,14 @@ class Task {
 
       let taskExecuted = []
       for (const item of allTask) {
+        const task = new Task(item.id)
         taskExecuted.push(item)
-        const $task = new Task(item.id)
-        await $task.execute()
+        await task.execute()
       }
-      return taskExecuted
+
+      return Promise.resolve(taskExecuted)
     } catch (error) {
-      return new Boom(error)
+      return Promise.reject(new Boom(error))
     }
   }
 }

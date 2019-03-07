@@ -21,6 +21,43 @@ test.afterEach(async t => {
   }
 })
 
+test('add task with reminder valid defaults', async t => {
+  const data = t.context.objTest
+  const reminder = t.context.reminder
+
+  delete reminder.state
+  delete reminder.repeat
+  reminder.method = 'TestMethod'
+
+  data.reminder = reminder
+
+  const taskData = await Task.add(data)
+
+  t.context.task = taskData
+
+  t.deepEqual(data.title, taskData.title)
+  t.deepEqual(taskData.state, 'active')
+  t.deepEqual(taskData.reminder.method, 'POST')
+  t.deepEqual(taskData.reminder.repeat.times, 1)
+  t.deepEqual(taskData.reminder.state, 'active')
+  t.deepEqual(taskData.reminder.uri, reminder.uri)
+})
+
+test('add task with reminder', async t => {
+  const data = t.context.objTest
+  const reminder = t.context.reminder
+  data.reminder = reminder
+
+  const taskData = await Task.add(data)
+
+  t.context.task = taskData
+
+  t.deepEqual(data.title, taskData.title)
+  t.deepEqual(taskData.state, 'active')
+  t.deepEqual(taskData.reminder.method, reminder.method)
+  t.deepEqual(taskData.reminder.uri, reminder.uri)
+})
+
 test('Update task, delete a user ', async t => {
   const newTaskData = t.context.objTest
   const user = `${uuid.v4()}@test.com`
@@ -281,7 +318,7 @@ test('Get all task by query', async t => {
   t.is((res.filter(d => { return d.name === newTask.name }).length > 0), true)
 })
 
-test('Exec task without repeat', async t => {
+test('Exec task reminder', async t => {
   const taskData = t.context.objTest
   taskData.reminder = t.context.reminder
 
@@ -298,7 +335,7 @@ test('Exec task without repeat', async t => {
   t.deepEqual(newTaskData.id, request.task)
 })
 
-test('Exec task with repeat', async t => {
+test('Exec task reminder with repeat', async t => {
   const newTask = t.context.objTest
   newTask.reminder = t.context.reminder
 
