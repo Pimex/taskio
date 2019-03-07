@@ -54,7 +54,7 @@ module.exports = internals.GoodConsole = class extends Stream.Transform {
     }
 
     if (eventName === 'response') {
-      if (events.response.statusCode.indexOf(data.statusCode) < 0) {
+      if (events.response && events.response.statusCode.indexOf(data.statusCode) < 0) {
         return next(null)
       }
 
