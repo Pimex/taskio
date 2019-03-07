@@ -158,7 +158,7 @@ const routes = [
     method: 'POST',
     path: '/tasks/monitor',
     handler: async (request, h) => {
-      let body = request.payload
+      const body = request.payload
       let res
 
       try {
@@ -168,14 +168,41 @@ const routes = [
               init: Moment().unix(),
               end: Moment().add(1, 'minute').unix()
             }
-          },
-          'reminder.state': 'active'
+          }
         }
 
         const data = await Task.monitor(query)
 
+        const expired = await Task.checkExpired()
+
         res = {
           data,
+          expired,
+          statusCode: 200
+        }
+      } catch (e) {
+        request.log('error', e)
+        res = e.output.payload
+      }
+
+      return h.response(res).code(res.statusCode)
+    }
+  },
+  /**
+  * POST - tasks.check.expired
+  * Check all expired tasks
+  **/
+  {
+    method: 'POST',
+    path: '/tasks/check/expired',
+    handler: async (request, h) => {
+      let res
+
+      try {
+        const expired = await Task.checkExpired()
+
+        res = {
+          data: expired,
           statusCode: 200
         }
       } catch (e) {

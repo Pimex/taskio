@@ -17,6 +17,30 @@ class Task {
     this.id = id
   }
 
+  static async checkExpired (params = {}) {
+    try {
+      const date = Moment().unix()
+
+      const tasks = await this.getAll({
+        end_date: {
+          $lt: date
+        },
+        state: 'active'
+      })
+
+      for (const taskData of tasks) {
+        const task = new Task(taskData.id)
+        await task.update({
+          state: 'expired'
+        })
+      }
+
+      return Promise.resolve(tasks)
+    } catch (e) {
+      return Promise.reject(new Boom(e))
+    }
+  }
+
   static async add (data = {}) {
     try {
       data._created = Moment().unix()
@@ -27,11 +51,11 @@ class Task {
         }
       }
 
-      data = Schema.validate(data, schemaTemplate.add)
-
       if (data.start_date && !data.end_date) {
         data.end_date = Moment.unix(data.start_date).endOf('day').unix()
       }
+
+      data = Schema.validate(data, schemaTemplate.add)
 
       if (data.reminder) {
         data.reminder.uri = data.reminder.uri || data.reminder.url

@@ -21,6 +21,24 @@ test.afterEach(async t => {
   }
 })
 
+test('Check expired tasks', async t => {
+  const date = Moment().subtract(5, 'day').unix()
+  const data = t.context.objTest
+  data.start_date = date
+  delete data.end_date
+
+  let taskData = await Task.add(data)
+  const expiredTasks = await Task.checkExpired()
+  const task = new Task(taskData.id)
+  taskData = await task.get()
+
+  t.context.task = taskData
+
+  t.deepEqual(data.title, taskData.title)
+  t.deepEqual(taskData.state, 'expired')
+  t.is(expiredTasks.filter(t => t.id === taskData.id).length > 0, true)
+})
+
 test('add task with reminder valid defaults', async t => {
   const data = t.context.objTest
   const reminder = t.context.reminder
