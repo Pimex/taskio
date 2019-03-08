@@ -159,16 +159,15 @@ const routes = [
     path: '/tasks/monitor',
     handler: async (request, h) => {
       const body = request.payload
+      const date = Moment().unix()
       let res
 
       try {
         let query = body || {
           'reminder.exect_date': {
-            range: {
-              init: Moment().unix(),
-              end: Moment().add(1, 'minute').unix()
-            }
-          }
+            $lt: date
+          },
+          'reminder.state': 'active'
         }
 
         const data = await Task.monitor(query)
