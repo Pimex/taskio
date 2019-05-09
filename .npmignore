@@ -4,3 +4,5 @@ Dockerfile
 .dockerignore
 docker-compose.*
 .nyc_output
+*-ignore.*
+*.log

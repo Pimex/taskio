@@ -4,3 +4,5 @@ dist
 config.json
 .nyc*
 *-ignore.*
+*-ignore.*
+*.log
