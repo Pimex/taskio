@@ -14,6 +14,21 @@ module.exports = {
 
       server.route({
         method: '*',
+        path: '/error/{status}',
+        handler: (request, h) => {
+          const params = request.params
+          const res = {
+            payload: request.payload,
+            params: request.params,
+            query: request.query,
+            headers: request.headers
+          }
+
+          return h.response(res).code(parseInt(params.status))
+        }
+      },
+      {
+        method: '*',
         path: '/{params*}',
         handler: (request, h) => {
           const res = {
@@ -58,6 +73,30 @@ module.exports = {
         method: 'POST',
         data: {
           test: 'testvalue'
+        }
+      }
+    }
+  },
+  request: {
+    data () {
+      return {
+        statusCode: 200,
+        method: 'POST',
+        task: uuid.v4(),
+        payload: {
+          data: {
+            test: 'testData'
+          }
+        },
+        response: {
+          headers: {
+            'Content-type': 'Json'
+          },
+          statusCode: 200,
+          body: {
+            test: 'testBodyData'
+          },
+          state: 'success'
         }
       }
     }

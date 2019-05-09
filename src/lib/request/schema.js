@@ -43,7 +43,7 @@ module.exports = {
       require: true
     },
     method: {
-      default: 'GET'
+      default: 'POST'
     },
     headers: {
       type: 'object'
@@ -59,6 +59,9 @@ module.exports = {
     },
     qs: {
       type: 'object'
+    },
+    resolveWithFullResponse: {
+      value: true
     }
   }
 }
