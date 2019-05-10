@@ -6,7 +6,6 @@ import schemaTemplate from './schema'
 import { Schema } from 'schemio'
 import Moment from 'moment'
 import Request from '../request'
-import $request from 'request-promise'
 
 const db = Db.init({ dbName: 'db_taskio', collection: 'task' })
 
@@ -163,65 +162,38 @@ class Task {
   }
 
   async execute () {
-    let resExec = {}
-
-    let taskData = await db.get(this.id)
-
-    if (!taskData.reminder || taskData.reminder.state === 'ended') {
-      return Promise.resolve({})
-    }
-
-    let state = 'active'
-    const webhook = {
-      uri: taskData.reminder.uri,
-      method: taskData.reminder.method || 'POST',
-      body: {
-        data: taskData.reminder.data || null,
-        task: taskData
-      },
-      json: true,
-      resolveWithFullResponse: true
-    }
-
     try {
-      resExec = await $request(webhook)
+      let taskData = await db.get(this.id)
 
-      resExec = {
-        headers: resExec.headers,
-        statusCode: resExec.statusCode,
-        body: resExec.body
+      if (!taskData.reminder || taskData.reminder.state === 'ended') {
+        return Promise.resolve({})
       }
-    } catch (error) {
-      state = 'failed'
-      resExec = {
-        headers: error.response ? error.response.headers : '',
-        statusCode: error.statusCode || 500,
-        body: error.response ? error.response.body : error.message
-      }
-    }
-    try {
-      let res = await Request.add({
-        statusCode: resExec.statusCode,
-        method: webhook.method,
-        task: taskData.id,
-        payload: webhook.body,
-        response: resExec,
-        state: resExec.statusCode >= 300 ? 'error' : 'success'
+
+      const res = await Request.send({
+        uri: taskData.reminder.uri,
+        method: taskData.reminder.method || 'POST',
+        body: {
+          data: taskData.reminder.data || null,
+          task: taskData
+        },
+        task: this.id
       })
 
       let query = { task: this.id }
-      if (state !== 'failed') query.state = 'success'
+
+      if (res.state === 'success') query.state = 'success'
+
       let cantRequest = await Request.getAll(query, {
-        limit: state === 'active' ? 0 : 3,
+        limit: res.state === 'success' ? 0 : 3,
         sort: { _id: -1 }
       })
 
-      if (state === 'failed') {
-        if (cantRequest.filter(d => { return d.state === 'error' }).length < 3) {
+      if (res.state === 'failed') {
+        if (cantRequest.filter(d => { return d.state === 'failed' }).length < 3) {
           let newDate = taskData.reminder.resend_failed || taskData.reminder.exect_date
           newDate = Moment.unix(newDate).add(1, 'hour').unix()
           taskData.reminder.resend_failed = newDate
-          taskData.reminder.state = state
+          taskData.reminder.state = res.state
           await db.update(this.id, {
             reminder: taskData.reminder
           })
@@ -236,6 +208,7 @@ class Task {
           const newDate = Moment.unix(taskData.reminder.exect_date).add(taskData.reminder.repeat.intDays, 'day').unix()
 
           await db.update(this.id, {
+            'reminder.state': 'active',
             'reminder.exect_date': newDate
           })
         } else {

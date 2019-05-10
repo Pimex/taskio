@@ -14,6 +14,19 @@ module.exports = {
 
       server.route({
         method: '*',
+        path: '/{params}',
+        handler: (request, h) => {
+          const res = {
+            payload: request.payload,
+            params: request.params,
+            query: request.query,
+            headers: request.headers
+          }
+
+          return h.response(res).code(200)
+        }
+      }, {
+        method: '*',
         path: '/error/{status}',
         handler: (request, h) => {
           const params = request.params
@@ -25,20 +38,6 @@ module.exports = {
           }
 
           return h.response(res).code(parseInt(params.status))
-        }
-      },
-      {
-        method: '*',
-        path: '/{params*}',
-        handler: (request, h) => {
-          const res = {
-            payload: request.payload,
-            params: request.params,
-            query: request.query,
-            headers: request.headers
-          }
-
-          return h.response(res).code(200)
         }
       })
 
@@ -78,11 +77,12 @@ module.exports = {
     }
   },
   request: {
-    data () {
+    data ({ url = null } = {}) {
       return {
         statusCode: 200,
         method: 'POST',
         task: uuid.v4(),
+        url: url || 'http://test.url',
         payload: {
           data: {
             test: 'testData'
