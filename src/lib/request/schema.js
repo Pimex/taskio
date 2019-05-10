@@ -34,6 +34,10 @@ module.exports = {
     },
     query: {
       type: 'object'
+    },
+    url: {
+      type: 'string',
+      require: true
     }
   },
 

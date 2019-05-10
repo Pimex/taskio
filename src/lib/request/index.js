@@ -39,12 +39,13 @@ class Request {
               headers: err.response.headers || {},
               statusCode: err.statusCode || 500,
               error: err.error,
-              state: 'error'
+              state: 'failed'
             })
           })
       })
 
       let req = await Request.add({
+        url: data.uri,
         statusCode: res.statusCode,
         headers: data.headers,
         method: data.method,
