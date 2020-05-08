@@ -24,11 +24,6 @@
     "url": "https://github.com/Pimex/taskio/issues"
   },
   "homepage": "https://github.com/Pimex/taskio#readme",
-  "ava": {
-    "require": [
-      "@babel/register"
-    ]
-  },
   "devDependencies": {
     "ava": "^1.2.1",
     "delay": "^4.1.0",

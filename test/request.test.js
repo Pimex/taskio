@@ -1,9 +1,9 @@
 'use strict'
 
-import test from 'ava'
-import Request from '../src/lib/request/index.js'
-import fixtures from './fixtures'
-import uuid from 'uuid'
+const test = require('ava')
+const Request = require('../src/lib/request/index.js')
+const fixtures = require('./fixtures')
+const uuid = require('uuid')
 
 test.beforeEach(async t => {
   const server = await fixtures.webhook.server()

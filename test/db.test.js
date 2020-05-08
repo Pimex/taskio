@@ -1,8 +1,8 @@
 'use strict'
 
-import test from 'ava'
-import Db from '../src/lib/db'
-import uuid from 'uuid/v4'
+const test = require('ava')
+const Db = require('../src/lib/db')
+const uuid = require('uuid/v4')
 
 test.before(async t => {
   t.context.dbName = 'db_taskio'

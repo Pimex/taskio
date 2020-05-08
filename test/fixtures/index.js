@@ -1,9 +1,9 @@
 'use strict'
 
-import Hapi from 'hapi'
-import Moment from 'moment'
-import uuid from 'uuid'
-import defaults from 'defaults'
+const Hapi = require('hapi')
+const Moment = require('moment')
+const uuid = require('uuid')
+const defaults = require('defaults')
 
 module.exports = {
   webhook: {

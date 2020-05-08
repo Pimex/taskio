@@ -1,10 +1,10 @@
 'use strict'
 
-import test from 'ava'
-import { Task } from '../../src'
-import Moment from 'moment'
-import delay from 'delay'
-import fixtures from '../fixtures'
+const test = require('ava')
+const { Task } = require('../../src')
+const Moment = require('moment')
+const delay = require('delay')
+const fixtures = require('../fixtures')
 
 test.beforeEach(async t => {
   const whServer = await fixtures.webhook.server()

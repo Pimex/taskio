@@ -1,13 +1,13 @@
 'use strict'
 
-import test from 'ava'
-import Server from '../src/services'
-import request from 'request-promise'
-import { Task } from '../src'
-import Moment from 'moment'
-import delay from 'delay'
-import fixtures from './fixtures'
-import uuid from 'uuid'
+const test = require('ava')
+const Server = require('../src/services')
+const request = require('request-promise')
+const { Task } = require('../src')
+const Moment = require('moment')
+const delay = require('delay')
+const fixtures = require('./fixtures')
+const uuid = require('uuid')
 
 test.before(async t => {
   const server = await Server.start('test')
