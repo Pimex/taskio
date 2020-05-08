@@ -5,7 +5,7 @@ const Db = require('../src/lib/db')
 const uuid = require('uuid/v4')
 
 test.before(async t => {
-  t.context.dbName = 'db_taskio'
+  t.context.dbName = 'taskio'
   t.context.collection = 'task'
   const obj = { dbName: t.context.dbName, collection: t.context.collection }
 
@@ -56,7 +56,7 @@ test('Get all documents', async t => {
 test('Init database', async t => {
   const dbName = t.context.dbName
   const instanse = await t.context.db.getInstance()
-  t.deepEqual(dbName, instanse.s.databaseName)
+  t.deepEqual(dbName, instanse.databaseName)
 })
 
 test('Add document', async t => {
