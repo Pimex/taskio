@@ -1,7 +1,0 @@
-{
-  "presets": [
-    ["@babel/preset-env", {
-      "exclude": ["transform-regenerator", "transform-async-to-generator", "transform-arrow-functions"]
-    }]
-  ]
-}

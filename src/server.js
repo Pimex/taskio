@@ -1,5 +1,5 @@
 'use strict'
 
-import { Server } from './'
+const { Server } = require('./')
 
 Server.start()

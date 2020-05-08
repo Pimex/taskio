@@ -1,7 +1,7 @@
 'use strict'
 
-import Task from '../../lib/task'
-import Moment from 'moment'
+const Task = require('../../lib/task')
+const Moment = require('moment')
 
 const routes = [
   /**

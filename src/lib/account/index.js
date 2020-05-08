@@ -1,6 +1,6 @@
 'use strict'
 
-import Boom from 'boom'
+const Boom = require('boom')
 
 class Account {
   constructor (id) {

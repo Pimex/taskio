@@ -1,9 +1,9 @@
 'use strict'
 
-import getfig from 'getfig'
-import Boom from 'boom'
-import { MongoClient } from 'mongodb'
-import Utils from '../utils'
+const getfig = require('getfig')
+const Boom = require('boom')
+const { MongoClient } = require('mongodb')
+const Utils = require('../utils')
 
 const config = getfig.get('modules.db') || {}
 let instance = false
@@ -63,7 +63,7 @@ class Db {
   static async connect (data = {}) {
     try {
       const url = Db.getUrl(data)
-      const i = await MongoClient.connect(url, { useNewUrlParser: true })
+      const i = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
       return Promise.resolve(i)
     } catch (error) {

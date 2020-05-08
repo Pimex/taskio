@@ -1,9 +1,9 @@
 'use strict'
 
-import Hapi from 'hapi'
-import routes from './routes'
-import good from 'good'
-import defaults from 'defaults'
+const Hapi = require('hapi')
+const routes = require('./routes')
+const good = require('good')
+const defaults = require('defaults')
 
 const portDefault = process.env.PORT || 3000
 // const NODE_ENV = process.env.NODE_ENV || null

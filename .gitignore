@@ -1,8 +1,8 @@
 node_modules
-*-lock.json
 dist
 config.json
 .nyc*
 *-ignore.*
-*-ignore.*
+*-ignore
 *.log
+.gcloudignore

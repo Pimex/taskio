@@ -1,12 +1,12 @@
 'use strict'
 
-import Boom from 'boom'
-import Db from '../db'
-import schemaTemplate from './schema'
-import { Schema } from 'schemio'
-import Moment from 'moment'
-import Request from '../request'
-import lib from './lib'
+const Boom = require('boom')
+const Db = require('../db')
+const schemaTemplate = require('./schema')
+const { Schema } = require('schemio')
+const Moment = require('moment')
+const Request = require('../request')
+const lib = require('./lib')
 
 const db = Db.init({ dbName: 'db_taskio', collection: 'webhooks' })
 

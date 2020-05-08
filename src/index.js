@@ -1,7 +1,7 @@
 'use strict'
 
-import Task from './lib/task'
-import Server from './services/'
+const Task = require('./lib/task')
+const Server = require('./services/')
 
 module.exports = {
   Task,
